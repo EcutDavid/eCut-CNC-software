@@ -1,0 +1,117 @@
+﻿<Window x:Class="P1S1.AxisSetting"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="AxisSetting" Height="427" Width="400">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"/>
+            <ColumnDefinition Width="1*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1.5*"/>
+            <RowDefinition Height="1.5*"/>
+            <RowDefinition Height="2*"/>
+        </Grid.RowDefinitions>
+        <GroupBox Grid.Row="0" Grid.Column="0" Header="X轴">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <TextBlock  HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大速度" VerticalAlignment="Center" Grid.Row="0"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大加速度" VerticalAlignment="Center" Grid.Row="1"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="脉冲每毫米" VerticalAlignment="Center" Grid.Row="2"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="XMaxSppedBox"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="XMaxAccBox"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="XStepPerUnitBox"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="0" Grid.Column="1" Header="Y轴">
+            <GroupBox.Content>
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock  HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大速度" VerticalAlignment="Center" Grid.Row="0"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大加速度" VerticalAlignment="Center" Grid.Row="1"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="脉冲每毫米" VerticalAlignment="Center" Grid.Row="2"/>
+                    <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="YMaxSppedBox"/>
+                    <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="YMaxAccBox"/>
+                    <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="YStepPerUnitBox"/>
+                </Grid>
+            </GroupBox.Content>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Grid.Column="0" Header="Z轴">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <TextBlock  HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大速度" VerticalAlignment="Center" Grid.Row="0"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大加速度" VerticalAlignment="Center" Grid.Row="1"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="脉冲每毫米" VerticalAlignment="Center" Grid.Row="2"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="ZMaxSppedBox"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="ZMaxAccBox"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="ZStepPerUnitBox"/>
+            </Grid>
+        </GroupBox>
+        <GroupBox Grid.Row="1" Grid.Column="1" Header="A轴">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
+                </Grid.RowDefinitions>
+                <TextBlock  HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大速度" VerticalAlignment="Center" Grid.Row="0"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大加速度" VerticalAlignment="Center" Grid.Row="1"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="脉冲每毫米" VerticalAlignment="Center" Grid.Row="2"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="AMaxSppedBox"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="AMaxAccBox"/>
+                <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="AStepPerUnitBox"/>
+            </Grid>
+        </GroupBox>
+        <TextBlock Margin="11,15,115,127" Text="脉冲细分数" VerticalAlignment="Center" Grid.Row="2"/>
+        <ComboBox  Margin="86,10,10,127" Height="21" Width="100" Name="SmoothComboBox" Grid.Row="2" SelectedIndex="0">
+            <ComboBoxItem>1</ComboBoxItem>
+            <ComboBoxItem>1/2</ComboBoxItem>
+            <ComboBoxItem>1/4</ComboBoxItem>
+            <ComboBoxItem>1/8</ComboBoxItem>
+            <ComboBoxItem>1/16</ComboBoxItem>
+            <ComboBoxItem>1/32</ComboBoxItem>
+            <ComboBoxItem>1/64</ComboBoxItem>
+            <ComboBoxItem>1/128</ComboBoxItem>
+            <ComboBoxItem>1/256</ComboBoxItem>
+            <ComboBoxItem>1/512</ComboBoxItem>
+            <ComboBoxItem>1/1024</ComboBoxItem>
+        </ComboBox>
+        <TextBlock Margin="13,13,101,129" Text="脉冲方向延时" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+        <TextBox Grid.Column="1" Height="21" Margin="86,10,17,0" Grid.Row="2" TextWrapping="Wrap" Name="PulseDirDelayBox" VerticalAlignment="Top"/>
+
+        <Button Content="确定" HorizontalAlignment="Left" Margin="111,128,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Click="ConformClick"/>
+        <Button Content="取消" HorizontalAlignment="Left" Margin="10,128,0,0" Grid.Row="2" VerticalAlignment="Top" Width="75" Grid.Column="1" Click="CancelClick"/>
+        <GroupBox Header="回零配置" HorizontalAlignment="Left" Margin="10,39,0,0" Grid.Row="2" VerticalAlignment="Top" Grid.ColumnSpan="2" Height="84" Width="365">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <CheckBox Content="X轴" HorizontalAlignment="Center" Grid.Column="0" Margin="0 10 0 0" Name="AxisXHomingCheckBox"/>
+                <CheckBox Content="Y轴" HorizontalAlignment="Center" Grid.Column="1" Margin="0 10 0 0" Name="AxisYHomingCheckBox"/>
+                <CheckBox Content="Z轴" HorizontalAlignment="Center" Grid.Column="2" Margin="0 10 0 0" Name="AxisZHomingCheckBox"/>
+                <CheckBox Content="A轴" HorizontalAlignment="Center" Grid.Column="3" Margin="0 10 0 0" Name="AxisAHomingCheckBox"/>
+                <TextBlock Margin="18,38,0,8" Text="回零方向" VerticalAlignment="Center" Grid.Column="1"/>
+                <ComboBox  Margin="87,35,78,6" Height="21" Width="100" SelectedIndex="0" Grid.ColumnSpan="3" Grid.Column="1" Name="HomingDirComboBox">
+                    <ComboBoxItem Content="正方向回零"/>
+                    <ComboBoxItem Content="负方向回零"/>
+                </ComboBox>
+            </Grid>
+        </GroupBox>
+
+    </Grid>
+</Window>

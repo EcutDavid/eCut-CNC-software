@@ -1,0 +1,16 @@
+*.pdb
+*.pdb
+*.cache
+*.filters
+*.user
+*.log
+*.idb
+*.tlog
+*.pch
+*.baml
+*.manifest
+*.application
+*.g.cs
+*.g.i.cs
+*.obj
+*.ilk

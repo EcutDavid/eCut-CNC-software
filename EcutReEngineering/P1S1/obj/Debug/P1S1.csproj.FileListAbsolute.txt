@@ -1,0 +1,14 @@
+E:\ecut\P1S1\P1S1\bin\Debug\P1S1.exe
+E:\ecut\P1S1\P1S1\bin\Debug\P1S1.pdb
+E:\ecut\P1S1\P1S1\obj\Debug\P1S1.csprojResolveAssemblyReference.cache
+E:\ecut\P1S1\P1S1\obj\Debug\MainWindow.baml
+E:\ecut\P1S1\P1S1\obj\Debug\MainWindow.g.cs
+E:\ecut\P1S1\P1S1\obj\Debug\App.g.cs
+E:\ecut\P1S1\P1S1\obj\Debug\P1S1_MarkupCompile.cache
+E:\ecut\P1S1\P1S1\obj\Debug\P1S1.g.resources
+E:\ecut\P1S1\P1S1\obj\Debug\P1S1.Properties.Resources.resources
+E:\ecut\P1S1\P1S1\obj\Debug\P1S1.csproj.GenerateResource.Cache
+E:\ecut\P1S1\P1S1\obj\Debug\P1S1.exe
+E:\ecut\P1S1\P1S1\obj\Debug\P1S1.pdb
+E:\ecut\P1S1\P1S1\bin\Debug\eCutDeviceCLR.dll
+E:\ecut\P1S1\P1S1\bin\Debug\eCutDeviceCLR.pdb

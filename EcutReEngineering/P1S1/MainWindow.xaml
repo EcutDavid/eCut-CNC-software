@@ -1,0 +1,495 @@
+﻿<Window
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="P1S1.MainWindow"
+        Title="e-Cut二次开发演示程序" Background="White"
+        ResizeMode="NoResize" Width="950" Height="620"
+        FontSize="15" Unloaded="Window_Unloaded">
+    <Window.Resources>
+        <Style x:Key="AxisLabel">
+            <Setter Property="Control.FontSize" Value="23"/>
+            <Setter Property="Control.Foreground" Value="#1570A6"/>
+            <Setter Property="Control.FontWeight" Value="Bold"/>
+            <Setter Property="FrameworkElement.Margin" Value="12 0 0 0"/>
+            <Setter Property="FrameworkElement.HorizontalAlignment" Value="Left"/>
+            <Setter Property="FrameworkElement.VerticalAlignment" Value="Center"/>
+        </Style>
+        <Style BasedOn="{StaticResource AxisLabel}" x:Key="PositonLabel">
+            <Setter Property="FrameworkElement.HorizontalAlignment" Value="Right"/>
+            <Setter Property="FrameworkElement.Margin" Value="0 0 12 0 "/>
+        </Style>
+        <Style x:Key="NormalButton">
+            <Setter Property="FrameworkElement.Width" Value="70"/>
+            <Setter Property="FrameworkElement.Margin" Value="18 12 10 10"/>
+            <Setter Property="Control.Padding" Value="5 0 5 0"/>
+            <Setter Property="FrameworkElement.Cursor" Value="Hand"/>
+            <Setter Property="Control.BorderBrush" Value="#1570A6"/>
+            <Setter Property="Control.Background" Value="#97D9F5"/>
+            <Setter Property="Control.FontSize" Value="11"/>
+        </Style>
+        <Style x:Key="LED">
+            <Setter Property="FrameworkElement.Height" Value="20"/>
+            <Setter Property="Shape.Fill" Value="Gray"/>
+            <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center"/>
+            <Setter Property="FrameworkElement.Margin" Value="0 0 0 20"/>
+            <Setter Property="FrameworkElement.Width" Value="20"/>
+        </Style>
+        <Style x:Key="LEDGrid">
+            <Setter Property="FrameworkElement.Height" Value="65"/>
+            <Setter Property="FrameworkElement.Width" Value="55"/>
+        </Style>
+        <Style x:Key="LEDLable">
+            <Setter Property="FrameworkElement.HorizontalAlignment" Value="Center"/>
+            <Setter Property="FrameworkElement.Margin" Value="0 35 0 0"/>
+        </Style>
+        <Style x:Key="LEDCheckBox">
+            <Setter Property="FrameworkElement.Margin" Value="0 15 0 0"/>
+        </Style>
+    </Window.Resources>
+    <Grid Width="950" Height="600">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="7*"/>
+            <RowDefinition Height="14*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="20*"/>
+            <ColumnDefinition Width="7*"/>
+        </Grid.ColumnDefinitions>
+        <!--系统状态与IO，坐标等信息面板-->
+        <Grid Grid.Column="0" Grid.Row="0"  Margin="10">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="3*"/>
+                <ColumnDefinition Width="7*"/>
+            </Grid.ColumnDefinitions>
+            <!--系统状态区-->
+            <GroupBox Header="系统状态"  Grid.Column="0" Margin="0 0 10 0">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="6*"/>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <ListBox x:Name="MessageBox" FontSize="12"/>
+                    <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
+                        <TextBlock FontSize="11" VerticalAlignment="Center"><Run Text="已加工时间："/></TextBlock>
+                        <TextBlock FontSize="11" VerticalAlignment="Center"><Run Text="00：00：00"/></TextBlock>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
+                        <TextBlock x:Name="GCodeTextArea" FontSize="11" VerticalAlignment="Center"><Run Text="当前加工行号"/></TextBlock>
+                        <TextBlock FontSize="11" VerticalAlignment="Center" Margin="10 0 0 0"><Run Text="0"/></TextBlock>
+                    </StackPanel>
+                </Grid>
+            </GroupBox>
+            <!--坐标显示区-->
+            <Grid  Grid.Column="1" >
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="328*"/>
+                    <ColumnDefinition Width="203*"/>
+                </Grid.ColumnDefinitions>
+                <GroupBox Header="工作坐标" Grid.Column="0" >
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="0" Style="{StaticResource PositonLabel}" x:Name="XAxisPosArea"><Run Text="+0.500"/></TextBlock>
+                        <TextBlock Grid.Row="1" Style="{StaticResource PositonLabel}" x:Name="YAxisPosArea"><Run Text="+2323.500"/></TextBlock>
+                        <TextBlock Grid.Row="2" Style="{StaticResource PositonLabel}" x:Name="ZAxisPosArea"><Run Text="+4234.500"/></TextBlock>
+                        <TextBlock Grid.Row="3" Style="{StaticResource PositonLabel}" x:Name="AAxisPosArea"><Run Text="+898988.500"/></TextBlock>
+                        <TextBlock Grid.Row="0" Style="{StaticResource AxisLabel}"><Run Text="X"/></TextBlock>
+                        <TextBlock Grid.Row="1" Style="{StaticResource AxisLabel}"><Run Text="Y"/></TextBlock>
+                        <TextBlock Grid.Row="2" Style="{StaticResource AxisLabel}"><Run Text="Z"/></TextBlock>
+                        <TextBlock Grid.Row="3" Style="{StaticResource AxisLabel}"><Run Text="A"/></TextBlock>
+                    </Grid>
+                </GroupBox>
+                <GroupBox Header="主轴配置" Grid.Column="1">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="2*"/>
+                        </Grid.RowDefinitions>
+                        <Button Grid.Row="0" Background="#97D9F5" HorizontalAlignment="Left" Margin="25 5 0 5"  Padding="5 0 5 0" Content="打开主轴" Cursor="Hand"  IsEnabled="False"/>
+                        <Ellipse Width="20" Height="20" HorizontalAlignment="Right" Margin="0 0 40 0" Fill="Gray"/>
+                        <TextBlock Grid.Row="1" HorizontalAlignment="Left" FontSize="13" Margin="5 0"><Run Text="主轴转速"/></TextBlock>
+                        <TextBlock Grid.Row="1" HorizontalAlignment="Left" FontSize="13" Margin="70 0"><Run Text="0"/></TextBlock>
+                        <Slider Grid.Row="2" TickPlacement="BottomRight"/>
+                        <TextBlock Grid.Row="3" HorizontalAlignment="Left" FontSize="13" Margin="5 0"><Run Text="进给倍率"/></TextBlock>
+                        <TextBlock Grid.Row="3" HorizontalAlignment="Left" FontSize="13" Margin="70 0"><Run Text="0%"/></TextBlock>
+                        <Slider Grid.Row="4" TickPlacement="BottomRight"/>
+
+                    </Grid>
+                </GroupBox>
+            </Grid>
+        </Grid>
+        <!--轨迹预览，G代码显示,IO状态等功能界面-->
+        <TabControl x:Name="DisplayTab"  Grid.Column="0" Grid.Row="1" Margin="10">
+            <TabItem Header="轨迹预览">
+                <Grid>
+                    <sharpGL:OpenGLControl x:Name="GlArea" OpenGLDraw="OpenGLControl_OpenGLDraw" Margin="192,10,113,10" Grid.ColumnSpan="2"/>
+                    <Button Background="#97D9F5" HorizontalAlignment="Left" Margin="582,116,0,204"  Padding="5 0 5 0" Content="重绘图像" Cursor="Hand" Click="ClearGl"/>
+                    <Button Background="#97D9F5" HorizontalAlignment="Left" Margin="590,223,0,97"  Padding="5 0 5 0" Content="Resume" Cursor="Hand" Click="CutResume"/>
+                    <Button Background="#97D9F5" HorizontalAlignment="Left" Margin="595,168,0,152"  Padding="5 0 5 0" Content="Pause" Cursor="Hand" Click="CutPause"/>
+                    <Button Background="#97D9F5" HorizontalAlignment="Left" Margin="42,108,0,212"  Padding="5 0 5 0" Content="长按增加旋转角度" Cursor="Hand" x:Name="RotateAddBt"/>
+                    <Button Background="#97D9F5" HorizontalAlignment="Left" Margin="42,188,0,132"  Padding="5 0 5 0" Content="长按增加减小角度" Cursor="Hand" x:Name="RotateSubBt"/>
+                    <TextBox Margin="67,246,504,81" Name ="GLRange"></TextBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="IO状态">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="174"/>
+                        <RowDefinition Height="174"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="462"/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <GroupBox Grid.Row="0" Grid.Column="1" Header="输入" Margin="5">
+                        <WrapPanel x:Name="InputLEDPanel"/>
+                    </GroupBox>
+                    <GroupBox Grid.Row="1" Grid.Column="1" Header="输出" Margin="5">
+                        <WrapPanel x:Name="OutPutLEDPanel"/>
+
+                    </GroupBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="底层库测试区">
+                <ScrollViewer>
+                    <StackPanel x:Name="DemoGrid">
+                        <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575" >
+                            <TabItem Header="SetInputIOEngineDir" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,-61,-1">
+                                    <TextBlock Text="对应的库函数：eCutSetInputIOEngineDir(IntPtr eCut,UInt64 InputIOEnable,UInt64 InputIONeg，Byte[] InputIOPin,SByte[] EngineDirections)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetInputIOEngineDir_InputIOEnable" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="InputIOEnable:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetInputIOEngineDir_InputIONeg" Height="20" Margin="110,94,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="InputIONeg:"  FontSize="12" HorizontalAlignment="Left" Margin="10,89,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetInputIOEngineDir_InputIOPin" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="InputIOPin:"  FontSize="12" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetInputIOEngineDir_EngineDirections"  Height="20" Margin="352,94,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="EngineDirections:" FontSize="12" HorizontalAlignment="Left" Margin="242,89,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetInputIOEngineDir"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="DeviceNum" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,-61,-1">
+                                    <TextBlock Text="对应的库函数：GetDeviceNum(void)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="12" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="DeviceNum_Result" FontSize="12" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="DeviceNum"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="GetDeviceInfo" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,-61,-1">
+                                    <TextBlock Text="对应的库函数：GetDeviceInfo(int Num,char SerialString[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="GetDeviceInfo_Number" Height="20" Margin="242,45,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="eCut Number:"  FontSize="12" HorizontalAlignment="Left" Margin="142,40,0,0" VerticalAlignment="Top"/>
+                                    <Label Content="得到的结果"  FontSize="12" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="GetDeviceInfo_Result" FontSize="12" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetDeviceInfo"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="Pause" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutPause(IntPtr eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="Pause"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="Resume" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutResume(IntPtr eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="Resume"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="Abort" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutAbort(IntPtr eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="Abort"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="StopAll" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutStopAll(IntPtr eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="StopAll"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="EStop" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutEStop(IntPtr eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="EStop"/>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                        <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575">
+                            <TabItem Header = "MoveAbsolute" FontSize = "12">
+                                <Grid Background = "#FFE5E5E5" Margin = "0,-2,-61,-1">
+                                    <TextBlock Text="对应的库函数：eCutMoveAbsolute(eCutDevice eCut,unsigned short AxisMask,double PositionGiven[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="eCutMoveAbsolute_AxisMask" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="AxisMask:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="eCutMoveAbsolute_PositionGiven" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="PositionGiven:"  FontSize="12" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutMoveAbsolute"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="InputIO" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutGetInputIO(eCutDevice eCut,unsigned short pInput[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="12" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="eCutGetInputIO_Result" FontSize="12" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutGetInputIO"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="GetSteps" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutGetSteps(eCutDevice eCut,int Steps[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="12" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="eCutGetSteps_Result" FontSize="12" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutGetSteps"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="IOOutput" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutSetIOOutput(eCutDevice eCut,unsigned short Out)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="IOOutput_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Out:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="IOOutput"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="SetSpindle" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutSetSpindle(eCutDevice eCut,unsigned short Out)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetSpindle_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Out:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetSpindle"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="CutStop" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutStop(eCutDevice eCut,unsigned short Axis)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="CutStop_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Out:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="CutStop"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="GetSmoothCoff" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutGetSmoothCoff(eCutDevice eCut,unsigned int *pSmoothCoff)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="12" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="GetSmoothCoff_Result" FontSize="12" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetSmoothCoff"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="SetSoftLimit" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：SetSoftLimit(eCutDevice eCut,double MaxSoftLimit[],double MinSoftLimit[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetSoftLimit_MaxSoftLimit" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="MaxSoftLimit:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetSoftLimit_MinSoftLimit" Height="20" Margin="110,101,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="MinSoftLimit:"  FontSize="12" HorizontalAlignment="Left" Margin="10,95,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetSoftLimit"/>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                        <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575">
+                            <TabItem Header = "MoveAtSpeed" FontSize = "12">
+                                <Grid Background = "#FFE5E5E5" Margin = "0,-2,-61,-1">
+                                    <TextBlock Text="对应的库函数：eCutMoveAtSpeed(eCutDevice eCut,unsigned short AxisMask,double Acceleration[],double MaxSpeed[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="MoveAtSpeed_AxisMask" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="AxisMask:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="MoveAtSpeed_Acceleration" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Acceleration:"  FontSize="12" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="MoveAtSpeed_MaxSpeed" Height="20" Margin="110,106,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="MaxSpeed:"  FontSize="12" HorizontalAlignment="Left" Margin="10,100,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="MoveAtSpeed"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="GetSpindlePostion" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutGetSpindlePostion(eCutDevice eCut,unsigned short *SpindlePostion)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="12" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="GetSpindlePostion_Result" FontSize="12" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetSpindlePostion"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="SetCurrentPostion" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutSetCurrentPostion(eCutDevice eCut,eCutPosition *Pos)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetCurrentPostion_Pos" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Pos:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetCurrentPostion"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="SetStopType" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutSetStopType(eCutDevice eCut,eCutStopType type,double tolerance)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetStopType_type" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="type:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetStopType_tolerance" Height="20" Margin="110,101,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="tolerance:"  FontSize="12" HorizontalAlignment="Left" Margin="10,101,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetStopType"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="AddLine" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutAddLine(eCutDevice eCut,eCutPosition *end,  double vel, double ini_maxvel, double acc)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddLine_end" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="acc:"  FontSize="12" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddLine_vel" Height="20" Margin="110,106,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="ini_maxvel:"  FontSize="12" HorizontalAlignment="Left" Margin="242,100,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddLine_ini_maxvel" Height="20" Margin="352,106,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="vel:"  FontSize="12" HorizontalAlignment="Left" Margin="15,100,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.429,0.423"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddLine_acc" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="end:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="AddLine"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="AddCircle" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutAddCircle(eCutDevice eCut,eCutPosition *end, eCutCartesian *center,eCutCartesian *normal,int turn,double vel,double ini_maxvel,double acc)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddCircle_end" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="end:"  FontSize="12" HorizontalAlignment="Left" Margin="17,55,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddCircle_center" Height="20" Margin="384,56,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="center:"  FontSize="12" HorizontalAlignment="Left" Margin="319,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddCircle_normal" Height="20" Margin="110,91,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="normal:"  FontSize="12" HorizontalAlignment="Left" Margin="17,93,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddCircle_turn" Height="20" Margin="384,91,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="turn:"  FontSize="12" HorizontalAlignment="Left" Margin="319,93,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.515,0.615"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddCircle_vel" Height="20" Margin="110,116,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="vel:"  FontSize="12" HorizontalAlignment="Left" Margin="17,116,0,0" VerticalAlignment="Top" RenderTransformOrigin="0.667,0.615"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddCircle_ini_maxvel" Height="20" Margin="384,116,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="ini_maxvel:"  FontSize="12" HorizontalAlignment="Left" Margin="319,116,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="AddCircle_acc" Height="20" Margin="110,147,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="acc:"  FontSize="12" HorizontalAlignment="Left" Margin="17,141,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="232,182,0,0" VerticalAlignment="Top" Width="75" Click="AddCircle"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="IsDone" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutIsDone(eCutDevice eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="12" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="IsDone_Result" FontSize="12" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="IsDone"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Visibility="Collapsed" Header="SetStopType" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutSetStopType(eCutDevice eCut,eCutStopType type,double tolerance)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <!--<Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetSmoothCoff"/>-->
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="回原点测试区">
+                <ScrollViewer>
+                    <StackPanel >
+                        <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575" >
+                            <TabItem Header="X轴回原点" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,-61,-1">
+                                    <Label>在回原点的状态下，系统的操作面板将被失能，用户等待回原点完毕方能进行进一步操作。</Label>
+                                    <TextBox HorizontalAlignment="Left" x:Name="XHoming_InputIOPin" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="InputIOPin:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="XHoming"/>
+                                </Grid>
+                            </TabItem>
+                        </TabControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+        <!--右边的控制栏-->
+        <Grid  Grid.Column="1"  Grid.RowSpan="2">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="9*"/>
+                <RowDefinition Height="8*"/>
+                <RowDefinition Height="103*"/>
+            </Grid.RowDefinitions>
+            <Button Background="#97D9F5" HorizontalAlignment="Center" Padding="5 0 5 0" Content="连接e-Cut" Cursor="Hand" Margin="54,452,107,23" x:Name="ECutConnecter" Click="ConnetEcut" Width="85" Grid.Row="2"/>
+            <Ellipse Width="20" Height="20" HorizontalAlignment="Right" Margin="0,460,72,35" Fill="Gray" x:Name="ConnectLED" Grid.Row="2"/>
+
+            <TabControl x:Name="ControlTab" IsEnabled="False" Margin="10,0,10,80" Height="325" VerticalAlignment="Bottom" Grid.Row="2">
+                <TabItem Header="自动">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="3*"/>
+                            <RowDefinition Height="2*"/>
+                            <RowDefinition Height="3*"/>
+
+                        </Grid.RowDefinitions>
+                        <GroupBox Header="参数" Grid.Row="0">
+                            <WrapPanel>
+                                <Button Style="{StaticResource NormalButton}" Click="ShowAxisSetting" Content="轴参数"/>
+                                <Button Style="{StaticResource NormalButton}" Content="回原点配置" />
+                                <Button Style="{StaticResource NormalButton}" IsEnabled="False" Content="输入配置"/>
+                                <Button Style="{StaticResource NormalButton}" Click="ShowOutPutPinSetting" Content="输出配置"/>
+                            </WrapPanel>
+                        </GroupBox>
+                        <GroupBox Header="加工" Margin="0,0.5,0,72" Grid.RowSpan="2" Grid.Row="1">
+                            <WrapPanel>
+                                <Button Style="{StaticResource NormalButton}" Click="OpenGcodeFile" Content="打开文件"/>
+                                <Button Style="{StaticResource NormalButton}"  Click="LimitSet" Content="限位配置"/>
+                                <Button Style="{StaticResource NormalButton}" Click="RunGcode" Content="启动"/>
+                                <Button Style="{StaticResource NormalButton}"  IsEnabled="False" Content="停止" />
+                            </WrapPanel>
+                        </GroupBox>
+                        <Button Grid.Row="2" Background="#97D9F5" HorizontalAlignment="Center" Padding="5 0 5 0" Content="急停" Cursor="Hand" Margin="68,53,67,27" Width="85"  IsEnabled="False"/>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="手动控制">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1*"/>
+                            <ColumnDefinition Width="150"/>
+                            <ColumnDefinition Width="1*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="327"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="1" Grid.Column="1" x:Name="ManualGrid">
+                            <TextBlock HorizontalAlignment="Left" FontSize="13" Margin="5 0"><Run Text="移动速度"/></TextBlock>
+                            <TextBlock HorizontalAlignment="Left" FontSize="13" Margin="70 0 0 0" x:Name="ManualMoveRateTextBlock"><Run Text="0%"/></TextBlock>
+                            <Slider TickPlacement="BottomRight" Margin="0 20 0 0" x:Name="ManualMoveSlider" Value="5"/>
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="35,105,82,189" x:Name="ManualYUp" Content="Y+"/>
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="107,187,10,107" x:Name="ManualZDown" Content="Z-"/>
+
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="107,105,10,189" x:Name="ManualZUp" Content="Z+"/>
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="35,187,82,107" x:Name="ManualYDown" Content="Y-"/>
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="70,145,47,149" x:Name="ManualXDown" Content="X-"/>
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="0,145,117,149" x:Name="ManualXUp" Content="X+"/>
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="70,55,47,239" x:Name="ManualADown" Content="A-" Visibility="Hidden"/>
+                            <Button Width="33" Cursor="Hand"  Height="33" Margin="5,55,112,239" x:Name="ManualAUp" Content="A+" Visibility="Hidden" />
+                            <Button Width="50" Cursor="Hand"  Height="33" Margin="53,245,47,49" Click="AllAxisToZero" Content="回零"/>
+                        </Grid>
+                    </Grid>
+                </TabItem>
+                <TabItem Header="机械坐标"> 
+                    <WrapPanel>
+                        <TextBlock Text="X:" VerticalAlignment="Center" Margin="10 10 10 0"/>
+                        <TextBox Height="20" Width="60" Margin="0 15 5 0"  Text="0.0" Padding="5 0 0 0" x:Name="XCoordinateInput"/>
+                        <TextBlock Text="Y:" VerticalAlignment="Center" Margin="10 10 10 0"/>
+                        <TextBox Height="20" Width="60" Margin="0 15 5 0"  Text="0.0" Padding="5 0 0 0" x:Name="YCoordinateInput"/>
+                        <TextBlock Text="Z:" VerticalAlignment="Center" Margin="10 10 10 0"/>
+                        <TextBox Height="20" Width="60" Margin="0 15 5 0"  Text="0.0" Padding="5 0 0 0" x:Name="ZCoordinateInput"/>
+                        <TextBlock Text="A:" VerticalAlignment="Center" Margin="10 10 10 0"/>
+                        <TextBox Height="20" Width="60" Margin="0 15 5 0"  Text="0.0" Padding="5 0 0 0" x:Name="ACoordinateInput"/>
+                        <Button Style="{StaticResource NormalButton}" Margin="70 10 50 0" Click="ConfigCoordinate" RenderTransformOrigin="0.471,0.5" Content="配置"/>
+                    </WrapPanel>
+                </TabItem>
+            </TabControl>
+            <GroupBox Header="G code" Margin="10,10,10,410" Grid.RowSpan="3">
+
+                <ListBox Margin="0,25,10,0"  x:Name="GcodeBox" Grid.RowSpan="3"/>
+            </GroupBox>
+        </Grid>
+    </Grid>
+</Window>
