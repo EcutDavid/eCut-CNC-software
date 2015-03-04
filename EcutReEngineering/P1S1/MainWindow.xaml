@@ -226,6 +226,16 @@
                                     <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="EStop"/>
                                 </Grid>
                             </TabItem>
+                            <TabItem Header="Jog" FontSize="12">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutJogOn(IntPtr eCut, unsigned short Axis, double PositionGiven[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="eCutJogOn_Axis" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Axis:"  FontSize="12" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="eCutJogOn_PositionGiven" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="PositionGiven:"  FontSize="12" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutJogOn"/>
+                                </Grid>
+                            </TabItem>
                         </TabControl>
                         <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575">
                             <TabItem Header = "MoveAbsolute" FontSize = "12">

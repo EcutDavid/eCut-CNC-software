@@ -98,8 +98,8 @@
     <None Include="eCutDevice.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\..\..\..\eCutDevice.lib" />
     <Library Include="..\P1S1\bin\x86\Debug\PI.lib" />
+    <Library Include="eCutDevice.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

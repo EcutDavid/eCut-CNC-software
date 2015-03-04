@@ -313,11 +313,11 @@ namespace EcutController
         /// 点动运行，需要调用Stop停止
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
-        /// <param name="Axis">运动轴使能掩码，0 --> 任何轴的运动都被禁止， 1 --> X轴运动使能 3 --> X,Y轴运动使能</param>
+        /// <param name="Axis">运动轴 0 --> X轴， 1 --> Y轴 2 --> Z轴</param>
         /// <param name="PositionGiven">运动目的位置，单位毫米 0 --> X 1 --> Y 2 --> Z 3 --> A</param>
         /// <returns></returns>
         [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public static extern eCutError eCutJogOn(IntPtr eCut, ushort Axis, ref double PositionGiven);
+        public static extern eCutError eCutJogOn(IntPtr eCut, ushort Axis, double[]PositionGiven);
         #endregion
 
         #region  PC规划运动

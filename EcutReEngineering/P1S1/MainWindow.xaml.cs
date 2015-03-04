@@ -41,17 +41,19 @@ namespace P1S1
             cutService = new EcutEntity();
             timer.Interval = TimeSpan.FromSeconds(0.1);
             timer.Start();
-            textDisplayTimer.Interval = TimeSpan.FromSeconds(5);
+            textDisplayTimer.Interval = TimeSpan.FromSeconds(2);
             textDisplayTimer.Start();
-            //TODO: TEST GL
+            SetGLRangeBinding();
+        }
+
+        private void SetGLRangeBinding()
+        {
             glBindNumber = new GLNumber();
             var bindSetting = new Binding("Number");
             bindSetting.Source = glBindNumber;
             bindSetting.Mode = BindingMode.TwoWay;
             GLRange.SetBinding(TextBox.TextProperty, bindSetting);
-            GLRange.Text = "50";
-            glBindNumber.Number = "2323";
-            
+            glBindNumber.Number = "200";
         }
 
         private void InitControls()
@@ -88,7 +90,6 @@ namespace P1S1
                 axisBingSetting.Source = AxisNumbers[i];
                 textBlockArray[i].SetBinding(TextBlock.TextProperty, axisBingSetting);
             }
-
         }
 
         bindingNumber manualMoveRate;
@@ -126,9 +127,7 @@ namespace P1S1
                 if (InPutVal != null)
                 {
                     for (ushort i = 0; i < 16; i++)
-                    {
                         ledManager[i].EnableFlag = ((InPutVal & (1 << i)) == 0) ? false : true;
-                    }
                 }
             }
         }
@@ -212,8 +211,11 @@ namespace P1S1
                     var controllerConfigurationStruct = XmlUtility.GetConfig();
 
                     cutService.Open(1);
-                    //cutService.StepPin = outPutPinSettingStruct.stepPin;
-                    //cutService.DirPin = outPutPinSettingStruct.dirPin;
+                    //TODO:测试轴配置是否能用
+                    cutService.StepPin = new byte[9] {0, 1, 2, 3, 4, 5, 6, 7, 8};
+                    cutService.DirPin = new byte[9] { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18 };
+                    cutService.StepNeg = 0;
+                    cutService.DirNeg = 2;
                     //SmoothCoff的配置会影响最大加速度等其它参数，所以它们应该一起配置，并且SmoothCoff优于最大加速度
                     cutService.SmoothCoff = controllerConfigurationStruct.SmoothCoff;
                     cutService.StepsPerUnit = controllerConfigurationStruct.StepsPerUnit;
@@ -281,7 +283,7 @@ namespace P1S1
             const double valueForDownMove = -99999;
 
             var postion = new double[9];
-
+            ushort axis = 0;
             switch ((sender as Button).Name)
             {
                 case "ManualXDown":
@@ -291,28 +293,34 @@ namespace P1S1
                     postion[0] += valueForUpMove;
                     break;
                 case "ManualYDown":
+                    axis = 1;
                     postion[1] += valueForDownMove;
                     break;
                 case "ManualYUp":
+                    axis = 1;
                     postion[1] += valueForUpMove;
                     break;
                 case "ManualZDown":
+                    axis = 2;
                     postion[2] += valueForDownMove;
                     break;
                 case "ManualZUp":
+                    axis = 2;
                     postion[2] += valueForUpMove;
                     break;
                 case "ManualADown":
+                    axis = 3;
                     postion[3] += valueForDownMove;
                     break;
                 case "ManualAUp":
+                    axis = 3;
                     postion[3] += valueForUpMove;
                     break;
                 default:
                     break;
             }
             //TODO
-            cutService.AddLine(postion, 100, rate);
+            cutService.eCutJogOn(axis, postion);
         }
 
         private void ManualMouseUp(object sender, RoutedEventArgs e)
@@ -394,6 +402,7 @@ namespace P1S1
             }
         }
 
+        //Note!!! 现在G代码解析传入了当前的机械坐标
         private List<MoveInfoStruct> moveInfoList;
         /// <summary>
         /// TODO：G代码解析
@@ -431,7 +440,7 @@ namespace P1S1
                 if (item.Type == 1)
                 {
                    cutService.AddLine(new double[4]{item.Position[0],
-                   item.Position[1],item.Position[2],item.Position[3]}, 50, 30);
+                   item.Position[1],item.Position[2],item.Position[3]}, 5, 5);
                 }
                 if (item.Type == 2)
                 {
@@ -453,6 +462,12 @@ namespace P1S1
         {
             //  Get the OpenGL instance that's been passed to us.
             OpenGL gl = GlArea.OpenGL;
+
+            int perNum;
+            int.TryParse(glBindNumber.Number, out perNum);
+            if (perNum == 0)
+                perNum = 40;
+
             if (!GlInit || OnRotating)
             {
                 //  Clear the color and depth buffers.
@@ -501,8 +516,8 @@ namespace P1S1
                 gl.Begin(OpenGL.GL_LINES);
                 gl.Color(1f, 1f, 1f);
 
-                gl.Vertex(lastAxisVal[0] / 40, lastAxisVal[1] / 40, lastAxisVal[2] / 40);
-                gl.Vertex(AxisNumbers[0].Value / 40, AxisNumbers[1].Value / 40, AxisNumbers[2].Value / 40);
+                gl.Vertex(lastAxisVal[0] / perNum, lastAxisVal[1] / perNum, lastAxisVal[2] / perNum);
+                gl.Vertex(AxisNumbers[0].Value / perNum, AxisNumbers[1].Value / perNum, AxisNumbers[2].Value / perNum);
                 gl.End();
                 gl.Flush();
                 lastAxisVal[0] = AxisNumbers[0].Value;
@@ -525,8 +540,8 @@ namespace P1S1
                             gl.Begin(OpenGL.GL_LINES);
                             gl.Color((float)(0x68) / 255.0, (float)(0x7a) / 255.0, (float)(0xcc) / 255.0);
 
-                            gl.Vertex(array[i].Position[0] / 40, array[i].Position[1] / 40, array[i].Position[2] / 40);
-                            gl.Vertex(array[i + 1].Position[0] / 40, array[i + 1].Position[1] / 40, array[i + 1].Position[2] / 40);
+                            gl.Vertex(array[i].Position[0] / perNum, array[i].Position[1] / perNum, array[i].Position[2] / perNum);
+                            gl.Vertex(array[i + 1].Position[0] / perNum, array[i + 1].Position[1] / perNum, array[i + 1].Position[2] / perNum);
                             gl.End();
                             gl.Flush();
                         }
@@ -876,6 +891,34 @@ namespace P1S1
                 infoBorad.AddInfo("输入了错误的参数");
             }
         }
+
+        private void eCutJogOn(object sender, RoutedEventArgs e)
+        {
+            if (!cutService.IsOpen())
+            {
+                infoBorad.AddInfo("没有OPEN eCut");
+                return;
+            }
+            try
+            {
+                UInt16 Axis = UInt16.Parse(eCutJogOn_Axis.Text);
+                var doubleArray = new Double[9];
+                var strArray = (eCutJogOn_PositionGiven.Text).Split(',');
+                for (int i = 0; i < strArray.Length; i++)
+                {
+                    doubleArray[i] = Double.Parse(strArray[i]);
+                }
+                if (cutService.eCutJogOn(Axis, doubleArray))
+                    infoBorad.AddInfo("调用成功");
+                else
+                    infoBorad.AddInfo("调用失败");
+            }
+            catch (Exception)
+            {
+                infoBorad.AddInfo("输入了错误的参数");
+            }
+        }
+
         private void eCutMoveAbsolute(object sender, RoutedEventArgs e)
         {
             if (!cutService.IsOpen())

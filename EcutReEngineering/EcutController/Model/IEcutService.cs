@@ -24,6 +24,8 @@ namespace EcutController
         bool SetSoftLimit(double[] maxSoftLimit, double[] minSoftLimit);
         ushort DelayBetweenPulseAndDir { get; set; }
         uint SmoothCoff { get; set; }
+        ushort StepNeg { get; set; }
+        ushort DirNeg { get; set; }
         double[] Acceleration { set; }
         double[] MaxSpeed { get; set; }
         int[] StepsPerUnit { get; set; }
@@ -59,5 +61,8 @@ namespace EcutController
         bool SetStopType(eCutStopType type, double tolerance);
 
         bool eCutSetOutput(UInt16[] DigitalOut);
+
+        bool eCutJogOn(ushort Axis, double[] doubleArray);
+        //bool 
     }
 }

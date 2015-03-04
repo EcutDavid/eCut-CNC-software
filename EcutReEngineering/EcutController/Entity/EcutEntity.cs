@@ -35,6 +35,7 @@ namespace EcutController
         {
             if (eCutHandler.ToInt64() != 0)
             {
+                //no movement after close comunication
                 eCutDevice.eCutEStop(eCutHandler);
                 eCutDevice.eCutClose(eCutHandler);
                 eCutHandler = (IntPtr)0;
@@ -63,7 +64,7 @@ namespace EcutController
         {
             eCutPosition pos = new eCutPosition();
             pos.x = pos.y = pos.z = pos.a = 0;
-            eCutDevice.eCutSetCurrentPostion(eCutHandler, ref pos);
+            //eCutDevice.eCutSetCurrentPostion(eCutHandler, ref pos);
 
             if (postion != null)
             {
@@ -209,9 +210,39 @@ namespace EcutController
             set
             {
                 _stepPin = value;
-                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, 0, 0);
+                //eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
             }
         }
+
+        private ushort stepNeg;
+        public ushort StepNeg
+        {
+            get 
+            {
+                return stepNeg; 
+            }
+            set 
+            {
+                stepNeg = value;
+                //eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true },stepNeg, dirNeg);
+            }
+        }
+
+        private ushort dirNeg;
+        public ushort DirNeg
+        {
+            get
+            {
+                return dirNeg;
+            }
+            set
+            {
+                dirNeg = value;
+                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, 
+                    new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
+            }
+        }
+        
 
         public byte[] DirPin
         {
@@ -222,7 +253,7 @@ namespace EcutController
             set 
             {
                 _dirPin = value;
-                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, 0, 0);
+                //eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
             }
         }
 
@@ -378,6 +409,11 @@ namespace EcutController
             }
             var res = eCutDevice.eCutSetOutput(eCutHandler, 0, analogOutArray, digtalOutArray);
             return true;
+        }
+
+        public bool eCutJogOn(ushort Axis, double[] doubleArray)
+        {
+            return eCutError.eCut_True == eCutDevice.eCutJogOn(eCutHandler, Axis, doubleArray);
         }
     }
 }
