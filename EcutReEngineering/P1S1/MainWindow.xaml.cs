@@ -209,13 +209,19 @@ namespace P1S1
                     ControlTab.IsEnabled = true;
                     var outPutPinSettingStruct = XmlUtility.GetOutPutPinSetting();
                     var controllerConfigurationStruct = XmlUtility.GetConfig();
-
+                    ushort dirNeg = 0;
+                    for (int i = 0; i < controllerConfigurationStruct.DirInv.Length; i++)
+                    {
+                        if (controllerConfigurationStruct.DirInv[i])
+                            dirNeg += (ushort)(1 << i);
+                    }
                     cutService.Open(1);
                     //TODO:测试轴配置是否能用
                     cutService.StepPin = new byte[9] {0, 1, 2, 3, 4, 5, 6, 7, 8};
                     cutService.DirPin = new byte[9] { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18 };
                     cutService.StepNeg = 0;
-                    cutService.DirNeg = 2;
+                    cutService.DirNeg = dirNeg;
+
                     //SmoothCoff的配置会影响最大加速度等其它参数，所以它们应该一起配置，并且SmoothCoff优于最大加速度
                     cutService.SmoothCoff = controllerConfigurationStruct.SmoothCoff;
                     cutService.StepsPerUnit = controllerConfigurationStruct.StepsPerUnit;
@@ -1021,50 +1027,49 @@ namespace P1S1
             DisplayTab.IsEnabled = false;
             infoBorad.AddInfo("X轴回零中");
 
-            //开启线程进行回零过程，使回零动作不阻塞UI线程
+            //the UI thread shall not be block
             ThreadPool.QueueUserWorkItem(new WaitCallback(Homing), 0);
         }
 
+        //Homing & HardLimt shall not be set in the same IO,other wise the last step of this function
+        //use to correction the postion will be limit by hardlimit
         /// <summary>
         /// 回零处理
         /// </summary>
-        /// <param name="axisNum"></param>
-        private void Homing(object axisNum)
+        /// <param name="homingInfo"></param>
+        private void Homing(object homingInfo)
         {
             int taskHomingPin = 0;
             int inputIOVal = 0;
-            var pos = new double[4] { 0, 0, 0, 0 };
+            var pos = cutService.MachinePostion;
             //给目的轴配置无限大的运动位置，TODO：增加回零过程中的正负向功能
-            pos[(int)axisNum] += 999999;
+            pos[(int)homingInfo] += 999999;
             //TODO：将速度与加速度的50,50替换成用户配置
-            cutService.AddLine(pos, 50, 50);
+            cutService.eCutMoveAbsolute(15, pos);
             //直到相关IO被触发前，一直运动
             while ((inputIOVal & (1 << taskHomingPin)) == 0)
             {
                 inputIOVal = (int)cutService.InputIO;
                 this.Dispatcher.Invoke(new Action(() =>
                 {
-                    taskHomingPin = int.Parse(XHoming_InputIOPin.Text);
+                    //taskHomingPin = int.Parse(XHoming_InputIOPin.Text);
                 }));
                 Thread.Sleep(1);
             }
-
-            cutService.eCutAbort();
-
             //获取回零信号刚刚被触发时Cut所处位置
             var eCutPosWhenHomingSignalInvoke = cutService.MachinePostion;
-            WaitUntilCutStopMove((int)axisNum);
+            WaitUntilCutStopMove((int)homingInfo);
 
             //将多移动的位置补偿
-            pos[(int)axisNum] = -(cutService.MachinePostion[(int)axisNum] - eCutPosWhenHomingSignalInvoke[(int)axisNum]);
-            cutService.AddLine(pos, 50, 50);
-            WaitUntilCutStopMove((int)axisNum);
+            pos[(int)homingInfo] = -(cutService.MachinePostion[(int)homingInfo] - eCutPosWhenHomingSignalInvoke[(int)homingInfo]);
+            cutService.eCutMoveAbsolute(15, pos);
+            WaitUntilCutStopMove((int)homingInfo);
 
             //回零过后使得相应轴机械坐标归0
             var eCutPos = cutService.MachinePostion;
-            eCutPos[(int)axisNum] = 0;
-            Thread.Sleep(500);
+            eCutPos[(int)homingInfo] = 0;
             cutService.MachinePostion = eCutPos;
+            Thread.Sleep(500);
 
             this.Dispatcher.Invoke(new Action(() =>
             {

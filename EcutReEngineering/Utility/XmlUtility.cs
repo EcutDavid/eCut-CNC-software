@@ -29,6 +29,11 @@ namespace Utility
             itemArray[2].Element("Acceleration").Value = controllerConfiguration.Acceleration[2].ToString();
             itemArray[3].Element("Acceleration").Value = controllerConfiguration.Acceleration[3].ToString();
 
+            itemArray[0].Element("DirInv").Value = controllerConfiguration.DirInv[0].ToString();
+            itemArray[1].Element("DirInv").Value = controllerConfiguration.DirInv[1].ToString();
+            itemArray[2].Element("DirInv").Value = controllerConfiguration.DirInv[2].ToString();
+            itemArray[3].Element("DirInv").Value = controllerConfiguration.DirInv[3].ToString();
+
             element.Element("SmoothCoff").Value = controllerConfiguration.SmoothCoff.ToString();
             element.Element("DelayBetweenPulseAndDir").Value = controllerConfiguration.DelayBetweenPulseAndDir.ToString();
 
@@ -51,6 +56,7 @@ namespace Utility
             double[] maxSpeed = new double[9];
             UInt16 delayBetweenPulseAndDir;
             var homingEnableArray = new bool[9];
+            var dirInvArray = new bool[9];
             bool homingDir;
             var element = XElement.Parse(File.ReadAllText(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config")));
             var itemArray = element.Descendants("Axis").OrderBy(item => int.Parse(item.Element("Index").Value)).ToArray();
@@ -70,6 +76,11 @@ namespace Utility
             maxSpeed[2] = double.Parse(itemArray[2].Element("MaxSpeed").Value);
             maxSpeed[3] = double.Parse(itemArray[3].Element("MaxSpeed").Value);
 
+            dirInvArray[0] = bool.Parse(itemArray[0].Element("DirInv").Value);
+            dirInvArray[1] = bool.Parse(itemArray[1].Element("DirInv").Value);
+            dirInvArray[2] = bool.Parse(itemArray[2].Element("DirInv").Value);
+            dirInvArray[3] = bool.Parse(itemArray[3].Element("DirInv").Value);
+
             homingEnableArray[0] = bool.Parse(element.Element("AxisXHomingEnable").Value);
             homingEnableArray[1] = bool.Parse(element.Element("AxisYHomingEnable").Value);
             homingEnableArray[2] = bool.Parse(element.Element("AxisZHomingEnable").Value);
@@ -87,7 +98,7 @@ namespace Utility
             controllerConfiguration.StepsPerUnit = stepsPerUnit;
             controllerConfiguration.HomingEnable = homingEnableArray;
             controllerConfiguration.HomingDir = homingDir;
-
+            controllerConfiguration.DirInv = dirInvArray;
 
             return controllerConfiguration;
         }

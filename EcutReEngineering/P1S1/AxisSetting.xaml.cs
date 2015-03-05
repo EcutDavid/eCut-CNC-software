@@ -47,6 +47,11 @@ namespace P1S1
             AxisZHomingCheckBox.IsChecked = configration.HomingEnable[2];
             AxisAHomingCheckBox.IsChecked = configration.HomingEnable[3];
 
+            XDirInvCheckBox.IsChecked = configration.DirInv[0];
+            YDirInvCheckBox.IsChecked = configration.DirInv[1];
+            ZDirInvCheckBox.IsChecked = configration.DirInv[2];
+            ADirInvCheckBox.IsChecked = configration.DirInv[3];
+
             if (configration.HomingDir)
             {
                 HomingDirComboBox.SelectedIndex = 0;
@@ -91,7 +96,12 @@ namespace P1S1
             controllerConfiguration.HomingEnable[1] = (bool)AxisYHomingCheckBox.IsChecked;
             controllerConfiguration.HomingEnable[2] = (bool)AxisZHomingCheckBox.IsChecked;
             controllerConfiguration.HomingEnable[3] = (bool)AxisAHomingCheckBox.IsChecked;
-            
+
+            controllerConfiguration.DirInv[0] = (bool)XDirInvCheckBox.IsChecked;
+            controllerConfiguration.DirInv[1] = (bool)YDirInvCheckBox.IsChecked;
+            controllerConfiguration.DirInv[2] = (bool)ZDirInvCheckBox.IsChecked;
+            controllerConfiguration.DirInv[3] = (bool)ADirInvCheckBox.IsChecked;
+
             if (HomingDirComboBox.SelectedIndex == 0)
             {
                 controllerConfiguration.HomingDir = true;

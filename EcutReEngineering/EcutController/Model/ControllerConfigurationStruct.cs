@@ -14,13 +14,14 @@ namespace EcutController
         public bool[] HomingEnable { get; set; }
         public bool HomingDir { get; set; }
         public UInt16 DelayBetweenPulseAndDir { get; set; }
-
+        public bool[] DirInv { get; set; }
         public ControllerConfigurationStruct()
         {
             StepsPerUnit = new int[9];
             Acceleration = new double[9];
             MaxSpeed = new double[9];
             HomingEnable = new bool[9];
+            DirInv = new bool[9];
         }
     }
 }

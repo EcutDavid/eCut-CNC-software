@@ -5,6 +5,7 @@
     <MaxSpeed>5</MaxSpeed>
     <Acceleration>50</Acceleration>
     <StepsPerUnit>1600</StepsPerUnit>
+    <DirInv>False</DirInv>
   </Axis>
   <Axis>
     <Index>2</Index>
@@ -12,6 +13,7 @@
     <MaxSpeed>5</MaxSpeed>
     <Acceleration>50</Acceleration>
     <StepsPerUnit>1600</StepsPerUnit>
+    <DirInv>False</DirInv>
   </Axis>
   <Axis>
     <Index>3</Index>
@@ -19,6 +21,7 @@
     <MaxSpeed>5</MaxSpeed>
     <Acceleration>20</Acceleration>
     <StepsPerUnit>1600</StepsPerUnit>
+    <DirInv>True</DirInv>
   </Axis>
   <Axis>
     <Index>4</Index>
@@ -26,6 +29,7 @@
     <MaxSpeed>200</MaxSpeed>
     <Acceleration>140</Acceleration>
     <StepsPerUnit>1600</StepsPerUnit>
+    <DirInv>True</DirInv>
   </Axis>
   <SmoothCoff>16</SmoothCoff>
   <DelayBetweenPulseAndDir>50</DelayBetweenPulseAndDir>
@@ -37,9 +41,9 @@
   <YDirPinSet>9</YDirPinSet>
   <ZDirPinSet>10</ZDirPinSet>
   <ADirPinSet>11</ADirPinSet>
-  <AxisXHomingEnable>False</AxisXHomingEnable>
+  <AxisXHomingEnable>True</AxisXHomingEnable>
   <AxisYHomingEnable>True</AxisYHomingEnable>
-  <AxisZHomingEnable>False</AxisZHomingEnable>
+  <AxisZHomingEnable>True</AxisZHomingEnable>
   <AxisAHomingEnable>False</AxisAHomingEnable>
   <HomingDir>False</HomingDir>
 </Config>

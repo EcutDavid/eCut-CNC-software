@@ -18,6 +18,7 @@
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
+                    <RowDefinition Height="1*"/>
                 </Grid.RowDefinitions>
                 <TextBlock  HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大速度" VerticalAlignment="Center" Grid.Row="0"/>
                 <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="最大加速度" VerticalAlignment="Center" Grid.Row="1"/>
@@ -25,12 +26,15 @@
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="XMaxSppedBox"/>
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="XMaxAccBox"/>
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="XStepPerUnitBox"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="方向信号反相" VerticalAlignment="Center" Grid.Row="3"/>
+                <CheckBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="90" Grid.Row="3" Name="XDirInvCheckBox"/>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="0" Grid.Column="1" Header="Y轴">
             <GroupBox.Content>
                 <Grid>
                     <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
@@ -41,12 +45,15 @@
                     <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="YMaxSppedBox"/>
                     <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="YMaxAccBox"/>
                     <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="YStepPerUnitBox"/>
+                    <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="方向信号反相" VerticalAlignment="Center" Grid.Row="3"/>
+                    <CheckBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="90" Grid.Row="3" Name="YDirInvCheckBox"/>
                 </Grid>
             </GroupBox.Content>
         </GroupBox>
         <GroupBox Grid.Row="1" Grid.Column="0" Header="Z轴">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
@@ -57,11 +64,14 @@
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="ZMaxSppedBox"/>
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="ZMaxAccBox"/>
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="ZStepPerUnitBox"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="方向信号反相" VerticalAlignment="Center" Grid.Row="3"/>
+                <CheckBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="90" Grid.Row="3" Name="ZDirInvCheckBox"/>
             </Grid>
         </GroupBox>
         <GroupBox Grid.Row="1" Grid.Column="1" Header="A轴">
             <Grid>
                 <Grid.RowDefinitions>
+                    <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
                     <RowDefinition Height="1*"/>
@@ -72,6 +82,8 @@
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="0" Name="AMaxSppedBox"/>
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="1" Name="AMaxAccBox"/>
                 <TextBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="100" Grid.Row="2" Name="AStepPerUnitBox"/>
+                <TextBlock HorizontalAlignment="Left" Margin="5 0 0 0" Text="方向信号反相" VerticalAlignment="Center" Grid.Row="3"/>
+                <CheckBox HorizontalAlignment="Right" Margin="0 0 10 0" Height="17" Width="90" Grid.Row="3" Name="ADirInvCheckBox"/>
             </Grid>
         </GroupBox>
         <TextBlock Margin="11,15,115,127" Text="脉冲细分数" VerticalAlignment="Center" Grid.Row="2"/>
