@@ -108,6 +108,7 @@
     <Compile Include="AxisSetting.xaml.cs">
       <DependentUpon>AxisSetting.xaml</DependentUpon>
     </Compile>
+    <Compile Include="GLEntity.cs" />
     <Compile Include="OutputPinSetting.xaml.cs">
       <DependentUpon>OutputPinSetting.xaml</DependentUpon>
     </Compile>

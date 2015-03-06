@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:sharpGL="clr-namespace:SharpGL.WPF;assembly=SharpGL.WPF"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="P1S1.MainWindow"
-        Title="e-Cut二次开发演示程序" Background="White"
+        Title="eCut CNC software" Background="White"
         ResizeMode="NoResize" Width="950" Height="620"
         FontSize="15" Unloaded="Window_Unloaded">
     <Window.Resources>
@@ -444,7 +444,6 @@
                         </GroupBox>
                         <GroupBox Header="加工" Margin="0,0.5,0,72" Grid.RowSpan="2" Grid.Row="1">
                             <WrapPanel>
-                                <Button Style="{StaticResource NormalButton}" Click="OpenGcodeFile" Content="打开文件"/>
                                 <Button Style="{StaticResource NormalButton}"  Click="LimitSet" Content="限位配置"/>
                                 <Button Style="{StaticResource NormalButton}" Click="RunGcode" Content="启动"/>
                                 <Button Style="{StaticResource NormalButton}"  IsEnabled="False" Content="停止" />
@@ -482,7 +481,7 @@
                         </Grid>
                     </Grid>
                 </TabItem>
-                <TabItem Header="机械坐标"> 
+                <TabItem Header="机械坐标">
                     <WrapPanel>
                         <TextBlock Text="X:" VerticalAlignment="Center" Margin="10 10 10 0"/>
                         <TextBox Height="20" Width="60" Margin="0 15 5 0"  Text="0.0" Padding="5 0 0 0" x:Name="XCoordinateInput"/>
@@ -497,8 +496,10 @@
                 </TabItem>
             </TabControl>
             <GroupBox Header="G code" Margin="10,10,10,410" Grid.RowSpan="3">
-
-                <ListBox Margin="0,25,10,0"  x:Name="GcodeBox" Grid.RowSpan="3"/>
+                <Grid>
+                    <ListBox Margin="0,25,10,0"  x:Name="GcodeBox" Grid.RowSpan="3"/>
+                    <Button Style="{StaticResource NormalButton}" Click="OpenGcodeFile" Content="打开文件" Margin="134,-14,10,151" Width="Auto"/>
+                </Grid>
             </GroupBox>
         </Grid>
     </Grid>

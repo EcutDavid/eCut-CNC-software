@@ -13,7 +13,6 @@ using System.Windows.Threading;
 using Utility;
 using System.Linq;
 
-//Product : Ecut Software Demo Sprint 1
 namespace P1S1
 {
     public partial class MainWindow : Window
@@ -22,6 +21,7 @@ namespace P1S1
         InfoBorad gCodeBorad;
         IEcutService cutService;
         GLNumber glBindNumber;
+        GLEntity GLEntity; 
 
         [STAThread]
         public static void Main()
@@ -44,6 +44,11 @@ namespace P1S1
             textDisplayTimer.Interval = TimeSpan.FromSeconds(2);
             textDisplayTimer.Start();
             SetGLRangeBinding();
+
+            RotateAddBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(AddGlRotateDown), true);
+            RotateAddBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(AddGlRotateUp), true);
+            RotateSubBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(SubGlRotateDown), true);
+            RotateSubBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(SubGlRotateUp), true);
         }
 
         private void SetGLRangeBinding()
@@ -216,7 +221,6 @@ namespace P1S1
                             dirNeg += (ushort)(1 << i);
                     }
                     cutService.Open(1);
-                    //TODO:测试轴配置是否能用
                     cutService.StepPin = new byte[9] {0, 1, 2, 3, 4, 5, 6, 7, 8};
                     cutService.DirPin = new byte[9] { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18 };
                     cutService.StepNeg = 0;
@@ -242,7 +246,6 @@ namespace P1S1
                     ManualXDown.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
                     ManualYDown.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
                     ManualZDown.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-
                     ManualAUp.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
                     ManualXUp.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
                     ManualYUp.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
@@ -251,12 +254,6 @@ namespace P1S1
                     ManualXDown.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
                     ManualYDown.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
                     ManualZDown.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
-
-                    RotateAddBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(AddGlRotateDown), true);
-                    RotateAddBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(AddGlRotateUp), true);
-
-                    RotateSubBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(SubGlRotateDown), true);
-                    RotateSubBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(SubGlRotateUp), true);
                 }
                 catch (Exception)
                 {
@@ -325,7 +322,6 @@ namespace P1S1
                 default:
                     break;
             }
-            //TODO
             cutService.eCutJogOn(axis, postion);
         }
 
@@ -411,7 +407,7 @@ namespace P1S1
         //Note!!! 现在G代码解析传入了当前的机械坐标
         private List<MoveInfoStruct> moveInfoList;
         /// <summary>
-        /// TODO：G代码解析
+        /// Open the G code file
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -422,7 +418,15 @@ namespace P1S1
             if (fileDialog.ShowDialog() == true)
             {
                 var Text = System.IO.File.ReadAllText(fileDialog.FileName);
-                moveInfoList = gCodeParser.ParseCode(Text, cutService.MachinePostion);
+                try
+                {
+                    moveInfoList = gCodeParser.ParseCode(Text, cutService.MachinePostion);
+
+                }
+                catch (Exception ex)
+                {
+                    moveInfoList = gCodeParser.ParseCode(Text, new double[9]);
+                }
 
                 if (moveInfoList == null)
                 {
@@ -458,61 +462,52 @@ namespace P1S1
 
 
         #region OPENGL
-        bool GlInit = false;
+
+        bool GlInited = false;
         double[] lastAxisVal = new double[3];
         double RotateAngle = 0;
         bool OnRotating = false;
 
 
+        //更改策略：List存储导入的G代码轨迹，每次更换角度时重新导入，当前轨迹用点追踪不用线追踪，TODO：测试放大缩小
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
-            //  Get the OpenGL instance that's been passed to us.
             OpenGL gl = GlArea.OpenGL;
 
-            int perNum;
-            int.TryParse(glBindNumber.Number, out perNum);
-            if (perNum == 0)
-                perNum = 40;
+            int rangeNum;
+            int.TryParse(glBindNumber.Number, out rangeNum);
+            //if enter wrong input, convert it to 40
+            if (rangeNum == 0)
+                rangeNum = 40;
 
-            if (!GlInit || OnRotating)
+            #region 绘制坐标轴
+            //TODO: 增加X,Y,Z轴端点标记显示
+            if (!GlInited || OnRotating)
             {
-                //  Clear the color and depth buffers.
                 gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
-
-                //  Reset the modelview matrix.
-                //将当前点移到了屏幕中心，X坐标轴从左至右，Y坐标轴从下至上，Z坐标轴从里至外。OpenGL屏幕中心的坐标值是X和Y轴上的0.0f点。
                 gl.LoadIdentity();
 
                 //Move the geometry into a fairly central position.
                 gl.Translate(0f, 0.0f, -2.0f);
-
-                //  Draw a pyramid. First, rotate the modelview matrix.
                 gl.Rotate(RotateAngle, 1.0f, 1.0f, 1.0f);
-
+                
                 gl.LineWidth(2);
-
                 gl.Begin(OpenGL.GL_LINES);
                 gl.Color(0f, 0f, 1.0f);
                 gl.Vertex(0.0f, 0f, 0f);
                 gl.Vertex(0.0f, 1.0f, 0f);
-                gl.End();
-                gl.Flush();
-
-                gl.Begin(OpenGL.GL_LINES);
                 gl.Color(1f, 0f, 0f);
                 gl.Vertex(0.0f, 0f, 0f);
                 gl.Vertex(0.0f, 0f, 1.0f);
-                gl.End();
-                gl.Flush();
-
-                gl.Begin(OpenGL.GL_LINES);
                 gl.Color(0f, 1f, 0f);
                 gl.Vertex(0.0f, 0f, 0f);
                 gl.Vertex(1.0f, 0f, 0f);
                 gl.End();
                 gl.Flush();
-                GlInit = true;
+                
+                GlInited = true;
             }
+            #endregion
             else
             {
                 gl.LoadIdentity();
@@ -522,8 +517,8 @@ namespace P1S1
                 gl.Begin(OpenGL.GL_LINES);
                 gl.Color(1f, 1f, 1f);
 
-                gl.Vertex(lastAxisVal[0] / perNum, lastAxisVal[1] / perNum, lastAxisVal[2] / perNum);
-                gl.Vertex(AxisNumbers[0].Value / perNum, AxisNumbers[1].Value / perNum, AxisNumbers[2].Value / perNum);
+                gl.Vertex(lastAxisVal[0] / rangeNum, lastAxisVal[1] / rangeNum, lastAxisVal[2] / rangeNum);
+                gl.Vertex(AxisNumbers[0].Value / rangeNum, AxisNumbers[1].Value / rangeNum, AxisNumbers[2].Value / rangeNum);
                 gl.End();
                 gl.Flush();
                 lastAxisVal[0] = AxisNumbers[0].Value;
@@ -540,19 +535,20 @@ namespace P1S1
                         gl.LoadIdentity();
                         gl.Translate(0f, 0.0f, -2.0f);
                         gl.Rotate(RotateAngle, 1.0f, 1.0f, 1.0f);
-                        //##007acc
                         if (array[i].Type == 1)
                         {
                             gl.Begin(OpenGL.GL_LINES);
-                            gl.Color((float)(0x68) / 255.0, (float)(0x7a) / 255.0, (float)(0xcc) / 255.0);
+                            if (array[i].Position[2] == 0 || array[i + 1].Position[2] == 0)
+                                gl.Color((float)(0x68) / 255.0, (float)(0x7a) / 255.0, (float)(0xcc) / 255.0);
+                            else
+                                gl.Color((float)(0x255) / 255.0, (float)(0x7a) / 255.0, (float)(0xcc) / 255.0);
 
-                            gl.Vertex(array[i].Position[0] / perNum, array[i].Position[1] / perNum, array[i].Position[2] / perNum);
-                            gl.Vertex(array[i + 1].Position[0] / perNum, array[i + 1].Position[1] / perNum, array[i + 1].Position[2] / perNum);
+                            gl.Vertex(array[i].Position[0] / rangeNum, array[i].Position[1] / rangeNum, array[i].Position[2] / rangeNum);
+                            gl.Vertex(array[i + 1].Position[0] / rangeNum, array[i + 1].Position[1] / rangeNum, array[i + 1].Position[2] / rangeNum);
                             gl.End();
                             gl.Flush();
                         }
                     }
-                    loadReady = false;
                 }
             }
         }
@@ -564,7 +560,7 @@ namespace P1S1
         /// <param name="e"></param>
         private void ClearGl(object sender, RoutedEventArgs e)
         {
-            GlInit = false;
+            GlInited = false;
         }
 
         private void AddGlRotateUp(object sender, RoutedEventArgs e)
@@ -575,39 +571,38 @@ namespace P1S1
 
         private void AddGlTick(object sender, EventArgs e)
         {
-            OnRotating = true;
-            RotateAngle += 1.0;
+            RotateAngle += 2.0;
         }
 
         private void AddGlRotateDown(object sender, RoutedEventArgs e)
         {
+            OnRotating = true;
             timer.Tick += AddGlTick;
-            OnRotating = false;
         }
 
         private void SubGlRotateUp(object sender, RoutedEventArgs e)
         {
             timer.Tick -= SubGlTick;
+            OnRotating = false;
         }
 
         private void SubGlTick(object sender, EventArgs e)
         {
-            OnRotating = true;
-            RotateAngle -= 1.0;
+            RotateAngle -= 2.0;
         }
 
         private void SubGlRotateDown(object sender, RoutedEventArgs e)
         {
+            OnRotating = true;
             timer.Tick += SubGlTick;
         }
+        #endregion
 
+        #region 底层测试区事件处理
         private void Abort(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 if (cutService.eCutAbort())
@@ -621,13 +616,19 @@ namespace P1S1
             }
         }
 
-        private void Pause(object sender, RoutedEventArgs e)
+        private bool CheckCutIsOpen()
         {
             if (!cutService.IsOpen())
             {
                 infoBorad.AddInfo("没有OPEN eCut");
-                return;
+                return false;
             }
+            return true;
+        }
+        private void Pause(object sender, RoutedEventArgs e)
+        {
+            if (!CheckCutIsOpen())
+                return;
             try
             {
                 if (cutService.eCutPause())
@@ -643,11 +644,8 @@ namespace P1S1
 
         private void StopAll(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 cutService.StopAll();
@@ -661,11 +659,8 @@ namespace P1S1
 
         private void EStop(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 cutService.EStop();
@@ -678,11 +673,8 @@ namespace P1S1
         }
         private void Resume(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 if (cutService.eCutResume())
@@ -698,11 +690,8 @@ namespace P1S1
 
         private void DeviceNum(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 int result = cutService.GetSumNumberOfEcut();
@@ -716,11 +705,8 @@ namespace P1S1
         }
         private void eCutGetInputIO(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var result = cutService.InputIO;
@@ -736,11 +722,8 @@ namespace P1S1
 
         private void eCutGetSteps(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var result = cutService.GetSteps();
@@ -756,11 +739,8 @@ namespace P1S1
 
         private void GetDeviceInfo(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var taskNumber = int.Parse(GetDeviceInfo_Number.Text);
@@ -778,11 +758,8 @@ namespace P1S1
         }
         private void IOOutput(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var ushortArray = new ushort[16];
@@ -802,11 +779,8 @@ namespace P1S1
 
         private void CutStop(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var taskNumber = ushort.Parse(CutStop_Out.Text);
@@ -823,11 +797,8 @@ namespace P1S1
 
         private void GetSpindlePostion(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 UInt16 result = cutService.GetSpindlePostion();
@@ -842,11 +813,8 @@ namespace P1S1
 
         private void IsDone(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 bool result = cutService.eCutIsDone();
@@ -861,11 +829,8 @@ namespace P1S1
 
         private void GetSmoothCoff(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 UInt32 result = cutService.SmoothCoff;
@@ -880,11 +845,8 @@ namespace P1S1
 
         private void SetSpindle(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 //TODO:WHY THOW AN EXCEPTION?
@@ -900,11 +862,8 @@ namespace P1S1
 
         private void eCutJogOn(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 UInt16 Axis = UInt16.Parse(eCutJogOn_Axis.Text);
@@ -927,11 +886,8 @@ namespace P1S1
 
         private void eCutMoveAbsolute(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 UInt16 AxisMask = UInt16.Parse(eCutMoveAbsolute_AxisMask.Text);
@@ -954,11 +910,8 @@ namespace P1S1
 
         private void SetInputIOEngineDir(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var inputIOPinArray = new Byte[64];
@@ -989,11 +942,8 @@ namespace P1S1
 
         private void SetSoftLimit(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var maxSoftLimitArray = new double[9];
@@ -1020,12 +970,12 @@ namespace P1S1
             }
         }
 
+        //TODO:XHoming to homing
         private void XHoming(object sender, RoutedEventArgs e)
         {
-            //失能相关面板，在回零过程中禁止用户的其它操作
-            ControlTab.IsEnabled = false;
-            DisplayTab.IsEnabled = false;
+            EnableUserControl(false);
             infoBorad.AddInfo("X轴回零中");
+            var taskHomingPin = int.Parse(XHoming_InputIOPin.Text);
 
             //the UI thread shall not be block
             ThreadPool.QueueUserWorkItem(new WaitCallback(Homing), 0);
@@ -1033,8 +983,10 @@ namespace P1S1
 
         //Homing & HardLimt shall not be set in the same IO,other wise the last step of this function
         //use to correction the postion will be limit by hardlimit
+        //so, if use the same pin hardlimited shall be disabled
+        //TODO :Homing add pause
         /// <summary>
-        /// 回零处理
+        /// 回原点处理
         /// </summary>
         /// <param name="homingInfo"></param>
         private void Homing(object homingInfo)
@@ -1042,28 +994,23 @@ namespace P1S1
             int taskHomingPin = 0;
             int inputIOVal = 0;
             var pos = cutService.MachinePostion;
-            //给目的轴配置无限大的运动位置，TODO：增加回零过程中的正负向功能
+            //TODO : Add connect to dir in setting
             pos[(int)homingInfo] += 999999;
-            //TODO：将速度与加速度的50,50替换成用户配置
             cutService.eCutMoveAbsolute(15, pos);
-            //直到相关IO被触发前，一直运动
+
             while ((inputIOVal & (1 << taskHomingPin)) == 0)
             {
                 inputIOVal = (int)cutService.InputIO;
-                this.Dispatcher.Invoke(new Action(() =>
-                {
-                    //taskHomingPin = int.Parse(XHoming_InputIOPin.Text);
-                }));
                 Thread.Sleep(1);
             }
             //获取回零信号刚刚被触发时Cut所处位置
             var eCutPosWhenHomingSignalInvoke = cutService.MachinePostion;
-            WaitUntilCutStopMove((int)homingInfo);
+            WaitUntilCutStopMoveWithCertainAxis((int)homingInfo);
 
             //将多移动的位置补偿
             pos[(int)homingInfo] = -(cutService.MachinePostion[(int)homingInfo] - eCutPosWhenHomingSignalInvoke[(int)homingInfo]);
             cutService.eCutMoveAbsolute(15, pos);
-            WaitUntilCutStopMove((int)homingInfo);
+            WaitUntilCutStopMoveWithCertainAxis((int)homingInfo);
 
             //回零过后使得相应轴机械坐标归0
             var eCutPos = cutService.MachinePostion;
@@ -1073,13 +1020,18 @@ namespace P1S1
 
             this.Dispatcher.Invoke(new Action(() =>
             {
-                ControlTab.IsEnabled = true;
-                DisplayTab.IsEnabled = true;
+                EnableUserControl(true);
                 infoBorad.AddInfo("回零完毕");
             }));
         }
 
-        private void WaitUntilCutStopMove(int axisNum)
+        private void EnableUserControl(bool swither)
+        {
+            ControlTab.IsEnabled = swither;
+            DisplayTab.IsEnabled = swither;
+        }
+
+        private void WaitUntilCutStopMoveWithCertainAxis(int axisNum)
         {
             double tmp = 0;
             do
@@ -1092,11 +1044,8 @@ namespace P1S1
 
         private void SetCurrentPostion(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var pos = new double[9];
@@ -1118,11 +1067,8 @@ namespace P1S1
 
         private void AddCircle(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var acc = double.Parse(AddCircle_acc.Text);
@@ -1158,11 +1104,8 @@ namespace P1S1
         }
         private void AddLine(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var acc = double.Parse(AddLine_acc.Text);
@@ -1186,11 +1129,8 @@ namespace P1S1
 
         private void SetStopType(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var type = byte.Parse(SetStopType_type.Text);
@@ -1206,11 +1146,8 @@ namespace P1S1
         }
         private void MoveAtSpeed(object sender, RoutedEventArgs e)
         {
-            if (!cutService.IsOpen())
-            {
-                infoBorad.AddInfo("没有OPEN eCut");
+            if (!CheckCutIsOpen())
                 return;
-            }
             try
             {
                 var axis = ushort.Parse(MoveAtSpeed_AxisMask.Text);
@@ -1236,5 +1173,5 @@ namespace P1S1
         }
         public bool loadReady { get; set; }
     }
-        #endregion
+    #endregion
 }
