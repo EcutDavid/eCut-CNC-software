@@ -70,15 +70,7 @@
                         <RowDefinition Height="1*"/>
                         <RowDefinition Height="1*"/>
                     </Grid.RowDefinitions>
-                    <ListBox x:Name="MessageBox" FontSize="12"/>
-                    <StackPanel Orientation="Horizontal" Grid.Row="1" HorizontalAlignment="Center">
-                        <TextBlock FontSize="11" VerticalAlignment="Center"><Run Text="已加工时间："/></TextBlock>
-                        <TextBlock FontSize="11" VerticalAlignment="Center"><Run Text="00：00：00"/></TextBlock>
-                    </StackPanel>
-                    <StackPanel Orientation="Horizontal" Grid.Row="2" HorizontalAlignment="Center">
-                        <TextBlock x:Name="GCodeTextArea" FontSize="11" VerticalAlignment="Center"><Run Text="当前加工行号"/></TextBlock>
-                        <TextBlock FontSize="11" VerticalAlignment="Center" Margin="10 0 0 0"><Run Text="0"/></TextBlock>
-                    </StackPanel>
+                    <ListBox x:Name="MessageBox" FontSize="12" Grid.RowSpan="2"/>
                 </Grid>
             </GroupBox>
             <!--坐标显示区-->

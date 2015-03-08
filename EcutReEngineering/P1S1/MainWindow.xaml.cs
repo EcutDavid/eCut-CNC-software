@@ -21,7 +21,7 @@ namespace P1S1
         InfoBorad gCodeBorad;
         IEcutService cutService;
         GLNumber glBindNumber;
-        GLEntity GLEntity; 
+        GLEntity GLEntity;
 
         [STAThread]
         public static void Main()
@@ -45,10 +45,31 @@ namespace P1S1
             textDisplayTimer.Start();
             SetGLRangeBinding();
 
-            RotateAddBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(AddGlRotateDown), true);
-            RotateAddBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(AddGlRotateUp), true);
-            RotateSubBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(SubGlRotateDown), true);
-            RotateSubBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(SubGlRotateUp), true);
+            GlHandelInit();
+        }
+
+        private void GlHandelInit()
+        {
+            RotateAddBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler((sender, e) =>
+            {
+                OnRotating = true;
+                timer.Tick += GlAddAngleTick;
+            }), true);
+            RotateAddBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler((sender, e) =>
+            {
+                timer.Tick -= GlAddAngleTick;
+                OnRotating = false;
+            }), true);
+            RotateSubBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler((sender, e) =>
+            {
+                OnRotating = true;
+                timer.Tick += GlSubAngleTick;
+            }), true);
+            RotateSubBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler((sender, e) =>
+            {
+                timer.Tick -= GlSubAngleTick;
+                OnRotating = false;
+            }), true);
         }
 
         private void SetGLRangeBinding()
@@ -221,7 +242,7 @@ namespace P1S1
                             dirNeg += (ushort)(1 << i);
                     }
                     cutService.Open(1);
-                    cutService.StepPin = new byte[9] {0, 1, 2, 3, 4, 5, 6, 7, 8};
+                    cutService.StepPin = new byte[9] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
                     cutService.DirPin = new byte[9] { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18 };
                     cutService.StepNeg = 0;
                     cutService.DirNeg = dirNeg;
@@ -232,6 +253,8 @@ namespace P1S1
                     cutService.Acceleration = controllerConfigurationStruct.Acceleration;
                     cutService.MaxSpeed = controllerConfigurationStruct.MaxSpeed;
                     cutService.DelayBetweenPulseAndDir = controllerConfigurationStruct.DelayBetweenPulseAndDir;
+
+                    cutService.eCutSetInputIOEngineDir(0, 0, new byte[64], new sbyte[64]);
 
                     ECutConnecter.Content = "断开连接";
                     infoBorad.AddInfo("成功连接");
@@ -421,7 +444,6 @@ namespace P1S1
                 try
                 {
                     moveInfoList = gCodeParser.ParseCode(Text, cutService.MachinePostion);
-
                 }
                 catch (Exception ex)
                 {
@@ -447,16 +469,23 @@ namespace P1S1
             foreach (var item in moveInfoList)
             {
                 //TODO 速度未配置
+
                 if (item.Type == 1)
                 {
-                   cutService.AddLine(new double[4]{item.Position[0],
+                    cutService.AddLine(new double[4]{item.Position[0],
                    item.Position[1],item.Position[2],item.Position[3]}, 5, 5);
                 }
                 if (item.Type == 2)
                 {
                     cutService.CutAddCircle(item.CircleInfo.EndPos, item.CircleInfo.CenterPos,
-                        item.CircleInfo.NormalPos, -1, 30, 30, 30);
+                        item.CircleInfo.NormalPos, -1, 5, 5, 5);
                 }
+                if (item.Type == 3)
+                {
+                    cutService.CutAddCircle(item.CircleInfo.EndPos, item.CircleInfo.CenterPos,
+                        item.CircleInfo.NormalPos, 0, 5, 5, 5);
+                }
+
             }
         }
 
@@ -490,7 +519,7 @@ namespace P1S1
                 //Move the geometry into a fairly central position.
                 gl.Translate(0f, 0.0f, -2.0f);
                 gl.Rotate(RotateAngle, 1.0f, 1.0f, 1.0f);
-                
+
                 gl.LineWidth(2);
                 gl.Begin(OpenGL.GL_LINES);
                 gl.Color(0f, 0f, 1.0f);
@@ -504,7 +533,7 @@ namespace P1S1
                 gl.Vertex(1.0f, 0f, 0f);
                 gl.End();
                 gl.Flush();
-                
+
                 GlInited = true;
             }
             #endregion
@@ -541,7 +570,7 @@ namespace P1S1
                             if (array[i].Position[2] == 0 || array[i + 1].Position[2] == 0)
                                 gl.Color((float)(0x68) / 255.0, (float)(0x7a) / 255.0, (float)(0xcc) / 255.0);
                             else
-                                gl.Color((float)(0x255) / 255.0, (float)(0x7a) / 255.0, (float)(0xcc) / 255.0);
+                                gl.Color((float)(0x255) / 255.0, (float)(0x2a) / 255.0, (float)(0x2c) / 255.0);
 
                             gl.Vertex(array[i].Position[0] / rangeNum, array[i].Position[1] / rangeNum, array[i].Position[2] / rangeNum);
                             gl.Vertex(array[i + 1].Position[0] / rangeNum, array[i + 1].Position[1] / rangeNum, array[i + 1].Position[2] / rangeNum);
@@ -563,39 +592,16 @@ namespace P1S1
             GlInited = false;
         }
 
-        private void AddGlRotateUp(object sender, RoutedEventArgs e)
-        {
-            timer.Tick -= AddGlTick;
-            OnRotating = false;
-        }
-
-        private void AddGlTick(object sender, EventArgs e)
+        private void GlAddAngleTick(object sender, EventArgs e)
         {
             RotateAngle += 2.0;
         }
 
-        private void AddGlRotateDown(object sender, RoutedEventArgs e)
-        {
-            OnRotating = true;
-            timer.Tick += AddGlTick;
-        }
-
-        private void SubGlRotateUp(object sender, RoutedEventArgs e)
-        {
-            timer.Tick -= SubGlTick;
-            OnRotating = false;
-        }
-
-        private void SubGlTick(object sender, EventArgs e)
+        private void GlSubAngleTick(object sender, EventArgs e)
         {
             RotateAngle -= 2.0;
         }
 
-        private void SubGlRotateDown(object sender, RoutedEventArgs e)
-        {
-            OnRotating = true;
-            timer.Tick += SubGlTick;
-        }
         #endregion
 
         #region 底层测试区事件处理
@@ -992,10 +998,28 @@ namespace P1S1
         private void Homing(object homingInfo)
         {
             int taskHomingPin = 0;
-            int inputIOVal = 0;
+            int inputIOVal = 0;//If the trigger way is high tri, than set it all 0, otherwise
+            int axisNum = 0;
+            inputIOVal = HomingWithCertainAxis(4, inputIOVal, 2);
+            inputIOVal = HomingWithCertainAxis(3, inputIOVal, 1);
+            inputIOVal = HomingWithCertainAxis(taskHomingPin, inputIOVal, axisNum);
+
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                EnableUserControl(true);
+                infoBorad.AddInfo("回零完毕");
+            }));
+        }
+
+        private int HomingWithCertainAxis(int taskHomingPin, int inputIOVal, int axisNum)
+        {
             var pos = cutService.MachinePostion;
+            bool homingDir = false;
             //TODO : Add connect to dir in setting
-            pos[(int)homingInfo] += 999999;
+            if (homingDir)
+                pos[axisNum] += 999999;
+            else
+                pos[axisNum] -= 999999;
             cutService.eCutMoveAbsolute(15, pos);
 
             while ((inputIOVal & (1 << taskHomingPin)) == 0)
@@ -1003,26 +1027,32 @@ namespace P1S1
                 inputIOVal = (int)cutService.InputIO;
                 Thread.Sleep(1);
             }
-            //获取回零信号刚刚被触发时Cut所处位置
-            var eCutPosWhenHomingSignalInvoke = cutService.MachinePostion;
-            WaitUntilCutStopMoveWithCertainAxis((int)homingInfo);
-
-            //将多移动的位置补偿
-            pos[(int)homingInfo] = -(cutService.MachinePostion[(int)homingInfo] - eCutPosWhenHomingSignalInvoke[(int)homingInfo]);
+            cutService.EStop();
+            //获取回零信号刚刚被触发时Cut所处位置,补偿
+            //var eCutPosWhenHomingSignalInvoke = cutService.MachinePostion;
+            //pos[axisNum] = -(cutService.MachinePostion[axisNum] - eCutPosWhenHomingSignalInvoke[axisNum]);
+            //cutService.eCutMoveAbsolute(15, pos);
+            pos = cutService.MachinePostion;
+            if (homingDir)
+                pos[axisNum] -= 999999;
+            else
+                pos[axisNum] += 999999;
             cutService.eCutMoveAbsolute(15, pos);
-            WaitUntilCutStopMoveWithCertainAxis((int)homingInfo);
+            inputIOVal = (int)cutService.InputIO;
+            while ((inputIOVal & (1 << taskHomingPin)) != 0)
+            {
+                inputIOVal = (int)cutService.InputIO;
+                Thread.Sleep(1);
+            }
+            cutService.EStop();
+            WaitUntilCutStopMoveWithCertainAxis(axisNum);
 
             //回零过后使得相应轴机械坐标归0
             var eCutPos = cutService.MachinePostion;
-            eCutPos[(int)homingInfo] = 0;
+            eCutPos[axisNum] = 0;
             cutService.MachinePostion = eCutPos;
             Thread.Sleep(500);
-
-            this.Dispatcher.Invoke(new Action(() =>
-            {
-                EnableUserControl(true);
-                infoBorad.AddInfo("回零完毕");
-            }));
+            return inputIOVal;
         }
 
         private void EnableUserControl(bool swither)
@@ -1173,5 +1203,5 @@ namespace P1S1
         }
         public bool loadReady { get; set; }
     }
-    #endregion
+        #endregion
 }

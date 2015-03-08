@@ -40,6 +40,7 @@ namespace Utility
             return moveInfoList;
         }
 
+        static int lastType = 1;
         /// <summary>
         /// 解析单条指令
         /// </summary>
@@ -54,11 +55,39 @@ namespace Utility
                 GetMoveType(singleOrder, moveInfoStruct);
 
                 if (moveInfoStruct.Type == 1)
+                {
+                    lastType = 1;
                     GetLineInfo(singleOrder, moveInfoStruct, pos);
-                if (moveInfoStruct.Type == 2 || moveInfoStruct.Type == 3)
+                }
+                if (moveInfoStruct.Type == 2)
+                {
+                    lastType = 2;
                     GetCircleInfo(singleOrder, moveInfoStruct, pos);
+                }
+                if(moveInfoStruct.Type == 3)
+                {
+                    lastType = 3;
+                    GetCircleInfo(singleOrder, moveInfoStruct, pos);
+                }
             }
-
+            else
+            {
+                if (lastType == 1)
+                {
+                    moveInfoStruct.Type = 1;
+                    GetLineInfo(singleOrder, moveInfoStruct, pos);
+                }
+                if (lastType == 2)
+                {
+                    moveInfoStruct.Type = 2;
+                    GetCircleInfo(singleOrder, moveInfoStruct, pos);
+                }
+                if (lastType == 3)
+                {
+                    moveInfoStruct.Type = 3;
+                    GetCircleInfo(singleOrder, moveInfoStruct, pos);
+                }
+            }
             return moveInfoStruct;
         }
 
@@ -71,7 +100,7 @@ namespace Utility
         private static void GetMoveType(string singleOrder, MoveInfoStruct moveInfoStruct)
         {
             var remainText = Regex.Split(singleOrder, "G")[1];
-            var moveInfoDataItem = Regex.Split(remainText, "[X-Z]")[0];
+            var moveInfoDataItem = Regex.Split(remainText, "[X-ZI-K]")[0];
             switch (int.Parse(moveInfoDataItem))
             {
                 case 0:
@@ -97,32 +126,36 @@ namespace Utility
         /// <param name="pos"></param>
         private static void GetCircleInfo(string singleOrder, MoveInfoStruct moveInfoStruct, double[] pos)
         {
-            if (singleOrder.Contains('X') && singleOrder.Contains('Y') && singleOrder.Contains('I') && singleOrder.Contains('J'))
+            if (singleOrder.Contains('X') && singleOrder.Contains('Y') && (singleOrder.Contains('I') || singleOrder.Contains('J')))
             {
                 moveInfoStruct.CircleInfo.NormalPos = new double[3] { 0, 0, 1 };
-                var remainText = Regex.Split(singleOrder, "X")[1];
-                var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                moveInfoStruct.CircleInfo.EndPos[0] = double.Parse(moveInfoDataItem);
-                remainText = Regex.Split(singleOrder, "Y")[1];
-                moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                moveInfoStruct.CircleInfo.EndPos[1] = double.Parse(moveInfoDataItem);
-                remainText = Regex.Split(singleOrder, "I")[1];
-                moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                moveInfoStruct.CircleInfo.CenterPos[0] = pos[0] + double.Parse(moveInfoDataItem);
-                remainText = Regex.Split(singleOrder, "J")[1];
-                moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                moveInfoStruct.CircleInfo.CenterPos[1] = pos[1] + double.Parse(moveInfoDataItem);
+                if(singleOrder.Contains('X'))
+                    moveInfoStruct.CircleInfo.EndPos[0] = GetNearbyDoubleNum(singleOrder, "X");
+                else
+                    moveInfoStruct.CircleInfo.EndPos[0] = pos[0];
+
+                if (singleOrder.Contains('Y'))
+                    moveInfoStruct.CircleInfo.EndPos[1] = GetNearbyDoubleNum(singleOrder, "Y");
+                else
+                    moveInfoStruct.CircleInfo.EndPos[1] = pos[1];
+
+                if (singleOrder.Contains('I'))
+                    moveInfoStruct.CircleInfo.CenterPos[0] = pos[0] + GetNearbyDoubleNum(singleOrder, "I");
+                else
+                    moveInfoStruct.CircleInfo.CenterPos[0] = pos[0];
+
+                if (singleOrder.Contains('J'))
+                    moveInfoStruct.CircleInfo.CenterPos[1] = pos[1] + GetNearbyDoubleNum(singleOrder, "J");
+                else
+                    moveInfoStruct.CircleInfo.CenterPos[1] = pos[1];
+                //TODO: CORRECT
                 moveInfoStruct.CircleInfo.CenterPos[2] = moveInfoStruct.CircleInfo.EndPos[2] = pos[2];
                 pos[0] = moveInfoStruct.CircleInfo.EndPos[0];
                 pos[1] = moveInfoStruct.CircleInfo.EndPos[1];
             }
 
             if (singleOrder.Contains('F'))
-            {
-                var remainText = Regex.Split(singleOrder, "F")[1];
-                var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                moveInfoStruct.Speed = double.Parse(moveInfoDataItem);
-            }
+                moveInfoStruct.Speed = GetNearbyDoubleNum(singleOrder, "F");
         }
 
         /// <summary>
@@ -134,47 +167,22 @@ namespace Utility
         private static void GetLineInfo(string singleOrder, MoveInfoStruct moveInfoStruct, double[] pos)
         {
             if (singleOrder.Contains('X'))
-            {
-                var remainText = Regex.Split(singleOrder, "X")[1];
-                var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                pos[0] = moveInfoStruct.Position[0] = double.Parse(moveInfoDataItem);
-            }
+                pos[0] = moveInfoStruct.Position[0] = GetNearbyDoubleNum(singleOrder, "X");
             else
                 moveInfoStruct.Position[0] = pos[0];
 
             if (singleOrder.Contains('Y'))
-            {
-                var remainText = Regex.Split(singleOrder, "Y")[1];
-                var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                pos[1] = moveInfoStruct.Position[1] = double.Parse(moveInfoDataItem);
-            }
+                pos[1] = moveInfoStruct.Position[1] = GetNearbyDoubleNum(singleOrder, "Y");
             else
                 moveInfoStruct.Position[1] = pos[1];
 
             if (singleOrder.Contains('Z'))
-            {
-                var remainText = Regex.Split(singleOrder, "Z")[1];
-                var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                pos[2] = moveInfoStruct.Position[2] = double.Parse(moveInfoDataItem);
-            }
+                pos[2] = moveInfoStruct.Position[2] = GetNearbyDoubleNum(singleOrder, "Z");
             else
                 moveInfoStruct.Position[2] = pos[2];
 
-            if (singleOrder.Contains('A'))
-            {
-                var remainText = Regex.Split(singleOrder, "A")[1];
-                var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                pos[3] = moveInfoStruct.Position[3] = double.Parse(moveInfoDataItem);
-            }
-            else
-                moveInfoStruct.Position[3] = pos[3];
-
             if (singleOrder.Contains('F'))
-            {
-                var remainText = Regex.Split(singleOrder, "F")[1];
-                var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
-                moveInfoStruct.Speed = double.Parse(moveInfoDataItem);
-            }
+                moveInfoStruct.Speed = GetNearbyDoubleNum(singleOrder, "F");
         }
 
         /// <summary>
@@ -184,7 +192,14 @@ namespace Utility
         /// <returns></returns>
         private static bool IsGCodeValid(string Code)
         {
-            return Regex.IsMatch(Code, "(^G0?[0-3]([XYZIJKRF]-?[0-9]+.?[0-9]*)+?)$");
+            return Regex.IsMatch(Code, "(^G0?[0-3])?([XYZIJKRF]-?[0-9]+.?[0-9]*)+?$");
+        }
+        private static double GetNearbyDoubleNum(string singleOrder, string relatedString)
+        {
+            var remainText = Regex.Split(singleOrder, relatedString)[1];
+            var moveInfoDataItem = Regex.Split(remainText, "[X-Z]|[I-K]|F|A")[0];
+
+            return double.Parse(moveInfoDataItem);
         }
     }
 }
