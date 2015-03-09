@@ -3,15 +3,16 @@ using Microsoft.Win32;
 using SharpGL;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Data;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using Utility;
-using System.Linq;
 
 namespace P1S1
 {
@@ -20,7 +21,6 @@ namespace P1S1
         InfoBorad infoBorad;
         InfoBorad gCodeBorad;
         IEcutService cutService;
-        GLNumber glBindNumber;
         GLEntity GLEntity;
 
         [STAThread]
@@ -41,45 +41,13 @@ namespace P1S1
             cutService = new EcutEntity();
             timer.Interval = TimeSpan.FromSeconds(0.1);
             timer.Start();
+            TestDepth();
+        }
+
+        private void TestDepth()
+        {
             textDisplayTimer.Interval = TimeSpan.FromSeconds(2);
             textDisplayTimer.Start();
-            SetGLRangeBinding();
-
-            GlHandelInit();
-        }
-
-        private void GlHandelInit()
-        {
-            RotateAddBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler((sender, e) =>
-            {
-                OnRotating = true;
-                timer.Tick += GlAddAngleTick;
-            }), true);
-            RotateAddBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler((sender, e) =>
-            {
-                timer.Tick -= GlAddAngleTick;
-                OnRotating = false;
-            }), true);
-            RotateSubBt.AddHandler(Button.MouseDownEvent, new RoutedEventHandler((sender, e) =>
-            {
-                OnRotating = true;
-                timer.Tick += GlSubAngleTick;
-            }), true);
-            RotateSubBt.AddHandler(Button.MouseUpEvent, new RoutedEventHandler((sender, e) =>
-            {
-                timer.Tick -= GlSubAngleTick;
-                OnRotating = false;
-            }), true);
-        }
-
-        private void SetGLRangeBinding()
-        {
-            glBindNumber = new GLNumber();
-            var bindSetting = new Binding("Number");
-            bindSetting.Source = glBindNumber;
-            bindSetting.Mode = BindingMode.TwoWay;
-            GLRange.SetBinding(TextBox.TextProperty, bindSetting);
-            glBindNumber.Number = "200";
         }
 
         private void InitControls()
@@ -104,18 +72,19 @@ namespace P1S1
         bindingNumber[] AxisNumbers = new bindingNumber[4];
         private void initAxisPos()
         {
-            var textBlockArray = new TextBlock[4];
-            textBlockArray[0] = XAxisPosArea;
-            textBlockArray[1] = YAxisPosArea;
-            textBlockArray[2] = ZAxisPosArea;
-            textBlockArray[3] = AAxisPosArea;
-            for (int i = 0; i < 4; i++)
-            {
-                AxisNumbers[i] = new bindingNumber();
-                var axisBingSetting = new Binding("DisplayNumber");
-                axisBingSetting.Source = AxisNumbers[i];
-                textBlockArray[i].SetBinding(TextBlock.TextProperty, axisBingSetting);
-            }
+            int bindNumberIndex = 0;
+            InitCertainAxis(XAxisPosArea, bindNumberIndex++);
+            InitCertainAxis(YAxisPosArea, bindNumberIndex++);
+            InitCertainAxis(ZAxisPosArea, bindNumberIndex++);
+            InitCertainAxis(AAxisPosArea, bindNumberIndex);
+        }
+
+        private void InitCertainAxis(TextBlock textBlock, int bindNumberIndex)
+        {
+            AxisNumbers[bindNumberIndex] = new bindingNumber();
+            var axisBingSetting = new Binding("DisplayNumber");
+            axisBingSetting.Source = AxisNumbers[bindNumberIndex];
+            textBlock.SetBinding(TextBlock.TextProperty, axisBingSetting);
         }
 
         bindingNumber manualMoveRate;
@@ -135,14 +104,13 @@ namespace P1S1
         ushort OutPutValStore;
         void LedTimerTick(object sender, EventArgs e)
         {
-
             if (ledManager != null)
             {
                 ushort OutPutVal = 0;
                 int? InPutVal = 0;
-                for (ushort i = 16; i < 32; i++)
+                for (ushort i = LEDCount / 2; i < LEDCount; i++)
                 {
-                    OutPutVal += (ledManager[i].EnableFlag) ? ((ushort)(1 << (i - 16))) : (ushort)0;
+                    OutPutVal += (ledManager[i].EnableFlag) ? ((ushort)(1 << (i - LEDCount / 2))) : (ushort)0;
                 }
                 if (OutPutValStore != OutPutVal)
                 {
@@ -152,7 +120,7 @@ namespace P1S1
                 InPutVal = cutService.InputIO;
                 if (InPutVal != null)
                 {
-                    for (ushort i = 0; i < 16; i++)
+                    for (ushort i = 0; i < LEDCount / 2; i++)
                         ledManager[i].EnableFlag = ((InPutVal & (1 << i)) == 0) ? false : true;
                 }
             }
@@ -165,7 +133,7 @@ namespace P1S1
         /// </summary>
         private void initIOLed()
         {
-            ledManager = new LEDManager[32];
+            ledManager = new LEDManager[LEDCount];
             for (int i = 0; i < LEDCount; i++)
             {
                 var grid = new Grid();
@@ -192,12 +160,9 @@ namespace P1S1
                 }
                 else
                 {
-                    var checkBox = new CheckBox();
-                    checkBox.Style = (Style)FindResource("LEDCheckBox");
-                    var checkBoxBinding = new Binding("EnableFlag");
-                    checkBoxBinding.Source = ledManager[i];
-                    checkBoxBinding.Mode = BindingMode.OneWayToSource;
-                    checkBox.SetBinding(CheckBox.IsCheckedProperty, checkBoxBinding);
+                    var checkBox = new CheckBox() { Style = (Style)FindResource("LEDCheckBox")};
+                    checkBox.SetBinding(CheckBox.IsCheckedProperty, new Binding("EnableFlag") { 
+                        Mode = BindingMode.OneWayToSource, Source = ledManager[i]});
 
                     grid.Children.Add(checkBox);
 
@@ -247,6 +212,9 @@ namespace P1S1
                     cutService.StepNeg = 0;
                     cutService.DirNeg = dirNeg;
 
+                    //在不配置硬限位的情况下，清空硬限位配置
+                    cutService.eCutSetInputIOEngineDir(0, 0, new byte[64], new sbyte[64]);
+
                     //SmoothCoff的配置会影响最大加速度等其它参数，所以它们应该一起配置，并且SmoothCoff优于最大加速度
                     cutService.SmoothCoff = controllerConfigurationStruct.SmoothCoff;
                     cutService.StepsPerUnit = controllerConfigurationStruct.StepsPerUnit;
@@ -254,21 +222,20 @@ namespace P1S1
                     cutService.MaxSpeed = controllerConfigurationStruct.MaxSpeed;
                     cutService.DelayBetweenPulseAndDir = controllerConfigurationStruct.DelayBetweenPulseAndDir;
 
-                    cutService.eCutSetInputIOEngineDir(0, 0, new byte[64], new sbyte[64]);
-
                     ECutConnecter.Content = "断开连接";
                     infoBorad.AddInfo("成功连接");
                     timer.Tick += AxistTick;
                     timer.Tick += LedTimerTick;
                     textDisplayTimer.Tick += textDisplayTimer_Tick;
-                    ManualAUp.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-                    ManualXUp.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-                    ManualYUp.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-                    ManualZUp.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-                    ManualADown.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-                    ManualXDown.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-                    ManualYDown.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
-                    ManualZDown.AddHandler(Button.MouseDownEvent, new RoutedEventHandler(ManualMouseDown), true);
+                    var handler = new RoutedEventHandler(ManualMouseDown);
+                    ManualAUp.AddHandler(Button.MouseDownEvent, handler, true);
+                    ManualXUp.AddHandler(Button.MouseDownEvent, handler, true);
+                    ManualYUp.AddHandler(Button.MouseDownEvent, handler, true);
+                    ManualZUp.AddHandler(Button.MouseDownEvent, handler, true);
+                    ManualADown.AddHandler(Button.MouseDownEvent, handler, true);
+                    ManualXDown.AddHandler(Button.MouseDownEvent, handler, true);
+                    ManualYDown.AddHandler(Button.MouseDownEvent, handler, true);
+                    ManualZDown.AddHandler(Button.MouseDownEvent, handler, true);
                     ManualAUp.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
                     ManualXUp.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
                     ManualYUp.AddHandler(Button.MouseUpEvent, new RoutedEventHandler(ManualMouseUp), true);
@@ -286,18 +253,9 @@ namespace P1S1
             }
         }
 
-        void CutPause(object sender, EventArgs e)
-        {
-            cutService.eCutPause();
-        }
-
-        void CutResume(object sender, EventArgs e)
-        {
-            cutService.eCutResume();
-        }
-
         void textDisplayTimer_Tick(object sender, EventArgs e)
         {
+            //Test Active And Queue Depth
             infoBorad.AddInfo("eCutActiveDepth " + cutService.eCutActiveDepth());
             infoBorad.AddInfo("eCutQueueDepth " + cutService.eCutQueueDepth());
         }
@@ -370,7 +328,6 @@ namespace P1S1
             outPutPinSettingWindow.ShowDialog();
         }
 
-
         private void AllAxisToZero(object sender, RoutedEventArgs e)
         {
             ALLToZero();
@@ -389,8 +346,8 @@ namespace P1S1
 
         private void ConfigCoordinate(object sender, RoutedEventArgs e)
         {
-            cutService.MachinePostion = (new double[9] { double.Parse(XCoordinateInput.Text), double.Parse(YCoordinateInput.Text), double.Parse(ZCoordinateInput.Text), 
-            double.Parse(ACoordinateInput.Text),0, 0, 0, 0, 0});
+            cutService.MachinePostion = (new double[9] { double.Parse(XCoordinateInput.Text), double.Parse(YCoordinateInput.Text), 
+                double.Parse(ZCoordinateInput.Text), double.Parse(ACoordinateInput.Text),0, 0, 0, 0, 0});
         }
 
         private void LimitSet(object sender, RoutedEventArgs e)
@@ -429,6 +386,8 @@ namespace P1S1
 
         //Note!!! 现在G代码解析传入了当前的机械坐标
         private List<MoveInfoStruct> moveInfoList;
+        public bool loadReady { get; set; }
+
         /// <summary>
         /// Open the G code file
         /// </summary>
@@ -441,15 +400,7 @@ namespace P1S1
             if (fileDialog.ShowDialog() == true)
             {
                 var Text = System.IO.File.ReadAllText(fileDialog.FileName);
-                try
-                {
-                    moveInfoList = gCodeParser.ParseCode(Text, cutService.MachinePostion);
-                }
-                catch (Exception ex)
-                {
-                    moveInfoList = gCodeParser.ParseCode(Text, new double[9]);
-                }
-
+                moveInfoList = gCodeParser.ParseCode(Text, cutService.MachinePostion);
                 if (moveInfoList == null)
                 {
                     infoBorad.AddInfo("请输入正确的G代码文件");
@@ -469,7 +420,6 @@ namespace P1S1
             foreach (var item in moveInfoList)
             {
                 //TODO 速度未配置
-
                 if (item.Type == 1)
                 {
                     cutService.AddLine(new double[4]{item.Position[0],
@@ -485,7 +435,6 @@ namespace P1S1
                     cutService.CutAddCircle(item.CircleInfo.EndPos, item.CircleInfo.CenterPos,
                         item.CircleInfo.NormalPos, 0, 5, 5, 5);
                 }
-
             }
         }
 
@@ -494,21 +443,18 @@ namespace P1S1
 
         bool GlInited = false;
         double[] lastAxisVal = new double[3];
-        double RotateAngle = 0;
+        double rotateAngleXAxis = 0;
+        double rotateAngleYAxis = 0;
+        double rotateAngleZAxis = 0;
         bool OnRotating = false;
+        double glRangeNum = 40;
 
 
         //更改策略：List存储导入的G代码轨迹，每次更换角度时重新导入，当前轨迹用点追踪不用线追踪，TODO：测试放大缩小
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
             OpenGL gl = GlArea.OpenGL;
-
-            int rangeNum;
-            int.TryParse(glBindNumber.Number, out rangeNum);
-            //if enter wrong input, convert it to 40
-            if (rangeNum == 0)
-                rangeNum = 40;
-
+            
             #region 绘制坐标轴
             //TODO: 增加X,Y,Z轴端点标记显示
             if (!GlInited || OnRotating)
@@ -517,9 +463,18 @@ namespace P1S1
                 gl.LoadIdentity();
 
                 //Move the geometry into a fairly central position.
-                gl.Translate(0f, 0.0f, -2.0f);
-                gl.Rotate(RotateAngle, 1.0f, 1.0f, 1.0f);
+                gl.Translate(0f, 0.0f, -3.0f);
+                gl.Rotate(rotateAngleXAxis, 1.0f, 0f, 0f);
+                gl.Rotate(rotateAngleYAxis, 0f, 1.0f, 0f);
+                gl.Rotate(rotateAngleZAxis, 0f, 0f, 1.0f);
 
+                //DRAW A POINT
+                //gl.PointSize(2f);
+                //gl.Color(1.0f, 1.0f, 1.0f);
+                //gl.Begin(OpenGL.GL_POINTS);
+                //gl.Vertex(0.3f, 0.3f, 0);
+                //gl.End();
+                
                 gl.LineWidth(2);
                 gl.Begin(OpenGL.GL_LINES);
                 gl.Color(0f, 0f, 1.0f);
@@ -539,15 +494,11 @@ namespace P1S1
             #endregion
             else
             {
-                gl.LoadIdentity();
-                gl.Translate(0f, 0.0f, -2.0f);
-                gl.Rotate(RotateAngle, 1.0f, 1.0f, 1.0f);
-
                 gl.Begin(OpenGL.GL_LINES);
                 gl.Color(1f, 1f, 1f);
 
-                gl.Vertex(lastAxisVal[0] / rangeNum, lastAxisVal[1] / rangeNum, lastAxisVal[2] / rangeNum);
-                gl.Vertex(AxisNumbers[0].Value / rangeNum, AxisNumbers[1].Value / rangeNum, AxisNumbers[2].Value / rangeNum);
+                gl.Vertex(lastAxisVal[0] / glRangeNum, lastAxisVal[1] / glRangeNum, lastAxisVal[2] / glRangeNum);
+                gl.Vertex(AxisNumbers[0].Value / glRangeNum, AxisNumbers[1].Value / glRangeNum, AxisNumbers[2].Value / glRangeNum);
                 gl.End();
                 gl.Flush();
                 lastAxisVal[0] = AxisNumbers[0].Value;
@@ -558,12 +509,10 @@ namespace P1S1
             {
                 if (moveInfoList != null)
                 {
+                    OnRotating = false;
                     var array = moveInfoList.ToArray();
                     for (int i = 0; i < array.Length - 1; i++)
                     {
-                        gl.LoadIdentity();
-                        gl.Translate(0f, 0.0f, -2.0f);
-                        gl.Rotate(RotateAngle, 1.0f, 1.0f, 1.0f);
                         if (array[i].Type == 1)
                         {
                             gl.Begin(OpenGL.GL_LINES);
@@ -572,34 +521,14 @@ namespace P1S1
                             else
                                 gl.Color((float)(0x255) / 255.0, (float)(0x2a) / 255.0, (float)(0x2c) / 255.0);
 
-                            gl.Vertex(array[i].Position[0] / rangeNum, array[i].Position[1] / rangeNum, array[i].Position[2] / rangeNum);
-                            gl.Vertex(array[i + 1].Position[0] / rangeNum, array[i + 1].Position[1] / rangeNum, array[i + 1].Position[2] / rangeNum);
+                            gl.Vertex(array[i].Position[0] / glRangeNum, array[i].Position[1] / glRangeNum, array[i].Position[2] / glRangeNum);
+                            gl.Vertex(array[i + 1].Position[0] / glRangeNum, array[i + 1].Position[1] / glRangeNum, array[i + 1].Position[2] / glRangeNum);
                             gl.End();
                             gl.Flush();
                         }
                     }
                 }
             }
-        }
-
-        /// <summary>
-        /// 重绘图像用到的
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void ClearGl(object sender, RoutedEventArgs e)
-        {
-            GlInited = false;
-        }
-
-        private void GlAddAngleTick(object sender, EventArgs e)
-        {
-            RotateAngle += 2.0;
-        }
-
-        private void GlSubAngleTick(object sender, EventArgs e)
-        {
-            RotateAngle -= 2.0;
         }
 
         #endregion
@@ -976,13 +905,9 @@ namespace P1S1
             }
         }
 
-        //TODO:XHoming to homing
-        private void XHoming(object sender, RoutedEventArgs e)
+        private void Homing(object sender, RoutedEventArgs e)
         {
             EnableUserControl(false);
-            infoBorad.AddInfo("X轴回零中");
-            var taskHomingPin = int.Parse(XHoming_InputIOPin.Text);
-
             //the UI thread shall not be block
             ThreadPool.QueueUserWorkItem(new WaitCallback(Homing), 0);
         }
@@ -1000,8 +925,12 @@ namespace P1S1
             int taskHomingPin = 0;
             int inputIOVal = 0;//If the trigger way is high tri, than set it all 0, otherwise
             int axisNum = 0;
+
+            infoBorad.AddInfo("Z轴回零中");
             inputIOVal = HomingWithCertainAxis(4, inputIOVal, 2);
+            infoBorad.AddInfo("Y轴回零中");
             inputIOVal = HomingWithCertainAxis(3, inputIOVal, 1);
+            infoBorad.AddInfo("X轴回零中");
             inputIOVal = HomingWithCertainAxis(taskHomingPin, inputIOVal, axisNum);
 
             this.Dispatcher.Invoke(new Action(() =>
@@ -1144,9 +1073,8 @@ namespace P1S1
                 var pos = new double[9];
                 var strArray = (AddLine_end.Text).Split(',');
                 for (int i = 0; i < strArray.Length; i++)
-                {
                     pos[i] = double.Parse(strArray[i]);
-                }
+                
                 var result = cutService.CutAddLine(pos, vel, ini_maxvel, acc);
                 infoBorad.AddInfo("调用成功");
             }
@@ -1184,15 +1112,13 @@ namespace P1S1
                 var Acceleration = new double[9];
                 var strArray = (MoveAtSpeed_Acceleration.Text).Split(',');
                 for (int i = 0; i < strArray.Length; i++)
-                {
                     Acceleration[i] = double.Parse(strArray[i]);
-                }
+                
                 var MaxSpeed = new double[9];
                 strArray = (MoveAtSpeed_MaxSpeed.Text).Split(',');
                 for (int i = 0; i < strArray.Length; i++)
-                {
                     MaxSpeed[i] = double.Parse(strArray[i]);
-                }
+                
                 var result = cutService.MoveAtSpeed(axis, Acceleration, MaxSpeed);
                 infoBorad.AddInfo("调用成功");
             }
@@ -1201,7 +1127,42 @@ namespace P1S1
                 infoBorad.AddInfo("输入了错误的参数");
             }
         }
-        public bool loadReady { get; set; }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e)
+        {
+            OnRotating = true;
+            MatchKeyCodeForRotate(e, Key.W, ref rotateAngleXAxis, -2.0);
+            MatchKeyCodeForRotate(e, Key.S, ref rotateAngleXAxis, 2.0);
+            MatchKeyCodeForRotate(e, Key.A, ref rotateAngleYAxis, -2.0);
+            MatchKeyCodeForRotate(e, Key.D, ref rotateAngleYAxis, 2.0);
+            MatchKeyCodeForRotate(e, Key.Q, ref rotateAngleZAxis, -2.0);
+            MatchKeyCodeForRotate(e, Key.E, ref rotateAngleZAxis, 2.0);
+            MatchKeyCodeForGlDisplayRange(e, Key.R, ref glRangeNum, -1.0);
+            MatchKeyCodeForGlDisplayRange(e, Key.F, ref glRangeNum, 1.0);
+            MatchKeyCodeForDisplayTestingArea(e, Key.P);
+        }
+
+        private void MatchKeyCodeForDisplayTestingArea(KeyEventArgs e, Key key)
+        {
+            if (e.Key == key)
+                TestingArea.Visibility = (TestingArea.Visibility == Visibility.Visible) ? Visibility.Hidden : Visibility.Visible;
+        }
+
+        private void MatchKeyCodeForRotate(KeyEventArgs e, Key keyCode, ref double angle, double stepChangeValue)
+        {
+            if (e.Key == keyCode)
+                angle += stepChangeValue;
+        }
+
+        private void MatchKeyCodeForGlDisplayRange(KeyEventArgs e, Key keyCode, ref double range, double stepChangeValue)
+        {
+            if (e.Key == keyCode)
+            {
+                range += stepChangeValue;
+                if (range < 0)
+                    range = 0.5;
+            }
+        }
     }
         #endregion
 }

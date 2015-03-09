@@ -166,6 +166,8 @@ namespace EcutController
             get
             {
                 var doubleArray = new double[4];
+                if ((eCutHandler.ToInt64()) == 0)
+                    return doubleArray;
                 var stepNumer = GetSteps();
                 var stepsPerUnit = StepsPerUnit;
                 var smooth = (double)SmoothCoff;
