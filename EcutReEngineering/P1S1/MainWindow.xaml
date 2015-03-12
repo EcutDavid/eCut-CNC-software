@@ -5,7 +5,8 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="d" x:Class="P1S1.MainWindow"
         Title="ASU CNC software" Background="White"
         ResizeMode="NoResize" Width="950" Height="620"
-        FontSize="14" FontFamily="Microsoft YaHei" Unloaded="Window_Unloaded" KeyDown="Window_KeyDown">
+        FontSize="14" FontFamily="Microsoft YaHei" Unloaded="Window_Unloaded" 
+        KeyDown="Window_KeyDown" KeyUp="Window_KeyUp">
     <Window.Resources>
         <Style x:Key="AxisLabel">
             <Setter Property="Control.FontSize" Value="23"/>
@@ -460,7 +461,7 @@
                 </TabItem>
             </TabControl>
             <sharpGL:OpenGLControl x:Name="GlArea" OpenGLDraw="OpenGLControl_OpenGLDraw" Margin="10,10,20,415" Grid.RowSpan="3"/>
-            <!--<Button Grid.Row="2" Background="#97D9F5" HorizontalAlignment="Center" Padding="5 0 5 0" Content="急停" Cursor="Hand" Margin="54,417,107,68" Width="85" click="EStop"/>-->
+            <Button Grid.Row="2" Background="#97D9F5" HorizontalAlignment="Center" Padding="5 0 5 0" Content="急停" Cursor="Hand" Margin="54,417,107,68" Width="85" Click="EStop"/>
         </Grid>
     </Grid>
 </Window>

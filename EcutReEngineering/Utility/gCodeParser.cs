@@ -53,38 +53,34 @@ namespace Utility
             if (singleOrder.Contains('G'))
             {
                 GetMoveType(singleOrder, moveInfoStruct);
+                lastType = moveInfoStruct.Type;
 
                 if (moveInfoStruct.Type == 1)
                 {
-                    lastType = 1;
                     GetLineInfo(singleOrder, moveInfoStruct, pos);
                 }
                 if (moveInfoStruct.Type == 2)
                 {
-                    lastType = 2;
                     GetCircleInfo(singleOrder, moveInfoStruct, pos);
                 }
                 if(moveInfoStruct.Type == 3)
                 {
-                    lastType = 3;
                     GetCircleInfo(singleOrder, moveInfoStruct, pos);
                 }
             }
             else
             {
+                moveInfoStruct.Type = lastType;
                 if (lastType == 1)
                 {
-                    moveInfoStruct.Type = 1;
                     GetLineInfo(singleOrder, moveInfoStruct, pos);
                 }
                 if (lastType == 2)
                 {
-                    moveInfoStruct.Type = 2;
                     GetCircleInfo(singleOrder, moveInfoStruct, pos);
                 }
                 if (lastType == 3)
                 {
-                    moveInfoStruct.Type = 3;
                     GetCircleInfo(singleOrder, moveInfoStruct, pos);
                 }
             }
@@ -194,6 +190,7 @@ namespace Utility
         {
             return Regex.IsMatch(Code, "(^G0?[0-3])?([XYZIJKRF]-?[0-9]+.?[0-9]*)+?$");
         }
+
         private static double GetNearbyDoubleNum(string singleOrder, string relatedString)
         {
             var remainText = Regex.Split(singleOrder, relatedString)[1];

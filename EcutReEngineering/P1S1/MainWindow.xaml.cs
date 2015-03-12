@@ -21,15 +21,6 @@ namespace P1S1
         InfoBorad infoBorad;
         InfoBorad gCodeBorad;
         IEcutService cutService;
-        GLEntity GLEntity;
-
-        [STAThread]
-        public static void Main()
-        {
-            Application app = new Application();
-            MainWindow win = new MainWindow();
-            app.Run(win);
-        }
 
         DispatcherTimer timer = new DispatcherTimer();
         DispatcherTimer textDisplayTimer = new DispatcherTimer();
@@ -46,7 +37,7 @@ namespace P1S1
 
         private void TestDepth()
         {
-            textDisplayTimer.Interval = TimeSpan.FromSeconds(2);
+            textDisplayTimer.Interval = TimeSpan.FromSeconds(1);
             textDisplayTimer.Start();
         }
 
@@ -82,9 +73,7 @@ namespace P1S1
         private void InitCertainAxis(TextBlock textBlock, int bindNumberIndex)
         {
             AxisNumbers[bindNumberIndex] = new bindingNumber();
-            var axisBingSetting = new Binding("DisplayNumber");
-            axisBingSetting.Source = AxisNumbers[bindNumberIndex];
-            textBlock.SetBinding(TextBlock.TextProperty, axisBingSetting);
+            textBlock.SetBinding(TextBlock.TextProperty, new Binding("DisplayNumber") { Source = AxisNumbers[bindNumberIndex] });
         }
 
         bindingNumber manualMoveRate;
@@ -160,9 +149,12 @@ namespace P1S1
                 }
                 else
                 {
-                    var checkBox = new CheckBox() { Style = (Style)FindResource("LEDCheckBox")};
-                    checkBox.SetBinding(CheckBox.IsCheckedProperty, new Binding("EnableFlag") { 
-                        Mode = BindingMode.OneWayToSource, Source = ledManager[i]});
+                    var checkBox = new CheckBox() { Style = (Style)FindResource("LEDCheckBox") };
+                    checkBox.SetBinding(CheckBox.IsCheckedProperty, new Binding("EnableFlag")
+                    {
+                        Mode = BindingMode.OneWayToSource,
+                        Source = ledManager[i]
+                    });
 
                     grid.Children.Add(checkBox);
 
@@ -215,7 +207,7 @@ namespace P1S1
                     //在不配置硬限位的情况下，清空硬限位配置
                     cutService.eCutSetInputIOEngineDir(0, 0, new byte[64], new sbyte[64]);
 
-                    //SmoothCoff的配置会影响最大加速度等其它参数，所以它们应该一起配置，并且SmoothCoff优于最大加速度
+                    //SmoothCoff的配置会影响最大加速度等其它参数，所以它们应该一起配置，并且SmoothCoff优于最大加速度配置
                     cutService.SmoothCoff = controllerConfigurationStruct.SmoothCoff;
                     cutService.StepsPerUnit = controllerConfigurationStruct.StepsPerUnit;
                     cutService.Acceleration = controllerConfigurationStruct.Acceleration;
@@ -256,19 +248,25 @@ namespace P1S1
         void textDisplayTimer_Tick(object sender, EventArgs e)
         {
             //Test Active And Queue Depth
-            infoBorad.AddInfo("eCutActiveDepth " + cutService.eCutActiveDepth());
-            infoBorad.AddInfo("eCutQueueDepth " + cutService.eCutQueueDepth());
+            infoBorad.AddInfo("ASUActiveDepth " + cutService.eCutActiveDepth());
+            infoBorad.AddInfo("ASUQueueDepth " + cutService.eCutQueueDepth());
+            infoBorad.AddInfo("ASU IsDone " + cutService.eCutIsDone());
         }
 
         private void ManualMouseDown(object sender, RoutedEventArgs e)
         {
-            var rate = double.Parse(manualMoveRate.Percentage.Replace("%", "")) / 100.0;
+            string order = (sender as Button).Name;
+            JogControl(order);
+        }
+
+        private void JogControl(string order)
+        {
             const double valueForUpMove = 99999;
             const double valueForDownMove = -99999;
 
             var postion = new double[9];
             ushort axis = 0;
-            switch ((sender as Button).Name)
+            switch (order)
             {
                 case "ManualXDown":
                     postion[0] += valueForDownMove;
@@ -386,7 +384,7 @@ namespace P1S1
 
         //Note!!! 现在G代码解析传入了当前的机械坐标
         private List<MoveInfoStruct> moveInfoList;
-        public bool loadReady { get; set; }
+        public bool loadReady;
 
         /// <summary>
         /// Open the G code file
@@ -400,7 +398,7 @@ namespace P1S1
             if (fileDialog.ShowDialog() == true)
             {
                 var Text = System.IO.File.ReadAllText(fileDialog.FileName);
-                moveInfoList = gCodeParser.ParseCode(Text, cutService.MachinePostion);
+                moveInfoList = gCodeParser.ParseCode(Text, new double[9]);
                 if (moveInfoList == null)
                 {
                     infoBorad.AddInfo("请输入正确的G代码文件");
@@ -415,8 +413,14 @@ namespace P1S1
             }
         }
 
+        /// <summary>
+        /// To match the correct position, 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RunGcode(object sender, RoutedEventArgs e)
         {
+            cutService.SetCurrentPostion(cutService.MachinePostion);
             foreach (var item in moveInfoList)
             {
                 //TODO 速度未配置
@@ -442,7 +446,6 @@ namespace P1S1
         #region OPENGL
 
         bool GlInited = false;
-        double[] lastAxisVal = new double[3];
         double rotateAngleXAxis = 0;
         double rotateAngleYAxis = 0;
         double rotateAngleZAxis = 0;
@@ -454,58 +457,42 @@ namespace P1S1
         private void OpenGLControl_OpenGLDraw(object sender, SharpGL.SceneGraph.OpenGLEventArgs args)
         {
             OpenGL gl = GlArea.OpenGL;
-            
+            gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
+            gl.LoadIdentity();
+            gl.Translate(0f, 0.0f, -3.0f);
+            gl.Rotate(rotateAngleXAxis, 1.0f, 0f, 0f);
+            gl.Rotate(rotateAngleYAxis, 0f, 1.0f, 0f);
+            gl.Rotate(rotateAngleZAxis, 0f, 0f, 1.0f);
+
+            //DrawArc(gl, 0.1f, 0.1f, 0.5f, 0f, 3.14f, 20);
+
             #region 绘制坐标轴
             //TODO: 增加X,Y,Z轴端点标记显示
-            if (!GlInited || OnRotating)
-            {
-                gl.Clear(OpenGL.GL_COLOR_BUFFER_BIT | OpenGL.GL_DEPTH_BUFFER_BIT);
-                gl.LoadIdentity();
+            gl.LineWidth(2);
+            gl.Begin(OpenGL.GL_LINES);
+            gl.Color(0f, 0f, 1.0f);
+            gl.Vertex(0.0f, 0f, 0f);
+            gl.Vertex(0.0f, 1.0f, 0f);
+            gl.Color(1f, 0f, 0f);
+            gl.Vertex(0.0f, 0f, 0f);
+            gl.Vertex(0.0f, 0f, 1.0f);
+            gl.Color(0f, 1f, 0f);
+            gl.Vertex(0.0f, 0f, 0f);
+            gl.Vertex(1.0f, 0f, 0f);
+            gl.End();
 
-                //Move the geometry into a fairly central position.
-                gl.Translate(0f, 0.0f, -3.0f);
-                gl.Rotate(rotateAngleXAxis, 1.0f, 0f, 0f);
-                gl.Rotate(rotateAngleYAxis, 0f, 1.0f, 0f);
-                gl.Rotate(rotateAngleZAxis, 0f, 0f, 1.0f);
-
-                //DRAW A POINT
-                //gl.PointSize(2f);
-                //gl.Color(1.0f, 1.0f, 1.0f);
-                //gl.Begin(OpenGL.GL_POINTS);
-                //gl.Vertex(0.3f, 0.3f, 0);
-                //gl.End();
-                
-                gl.LineWidth(2);
-                gl.Begin(OpenGL.GL_LINES);
-                gl.Color(0f, 0f, 1.0f);
-                gl.Vertex(0.0f, 0f, 0f);
-                gl.Vertex(0.0f, 1.0f, 0f);
-                gl.Color(1f, 0f, 0f);
-                gl.Vertex(0.0f, 0f, 0f);
-                gl.Vertex(0.0f, 0f, 1.0f);
-                gl.Color(0f, 1f, 0f);
-                gl.Vertex(0.0f, 0f, 0f);
-                gl.Vertex(1.0f, 0f, 0f);
-                gl.End();
-                gl.Flush();
-
-                GlInited = true;
-            }
+            GlInited = true;
             #endregion
-            else
-            {
-                gl.Begin(OpenGL.GL_LINES);
-                gl.Color(1f, 1f, 1f);
 
-                gl.Vertex(lastAxisVal[0] / glRangeNum, lastAxisVal[1] / glRangeNum, lastAxisVal[2] / glRangeNum);
-                gl.Vertex(AxisNumbers[0].Value / glRangeNum, AxisNumbers[1].Value / glRangeNum, AxisNumbers[2].Value / glRangeNum);
-                gl.End();
-                gl.Flush();
-                lastAxisVal[0] = AxisNumbers[0].Value;
-                lastAxisVal[1] = AxisNumbers[1].Value;
-                lastAxisVal[2] = AxisNumbers[2].Value;
-            }
-            if (loadReady || OnRotating)
+            gl.Color(1f, 1f, 1f);
+            //DRAW A POINT
+            gl.PointSize(2f);
+            gl.Color(1.0f, 1.0f, 1.0f);
+            gl.Begin(OpenGL.GL_POINTS);
+            gl.Vertex(AxisNumbers[0].Value / glRangeNum, AxisNumbers[1].Value / glRangeNum, AxisNumbers[2].Value / glRangeNum);
+            gl.End();
+
+            if (loadReady)
             {
                 if (moveInfoList != null)
                 {
@@ -524,11 +511,41 @@ namespace P1S1
                             gl.Vertex(array[i].Position[0] / glRangeNum, array[i].Position[1] / glRangeNum, array[i].Position[2] / glRangeNum);
                             gl.Vertex(array[i + 1].Position[0] / glRangeNum, array[i + 1].Position[1] / glRangeNum, array[i + 1].Position[2] / glRangeNum);
                             gl.End();
-                            gl.Flush();
                         }
                     }
                 }
             }
+            gl.Flush();
+        }
+
+
+        void DrawArc(OpenGL glInstance, float startX, float startY, float r, float start_angle, float arc_angle, int num_segments)
+        {
+            float theta = arc_angle / (float)(num_segments - 1);//theta is now calculated from the arc angle instead, the - 1 bit comes from the fact that the arc is open
+
+            float tangetial_factor = (float)Math.Tan(theta);
+
+            float radial_factor = (float)Math.Cos(theta);
+
+
+            float xIncrement = (float)(r * Math.Cos(start_angle));//we now start at the start angle
+            float yIncrement = (float)(r * Math.Sin(start_angle));
+
+            glInstance.Begin(OpenGL.GL_LINE_STRIP);//since the arc is not a closed curve, this is a strip now
+            for (int ii = 0; ii < num_segments; ii++)
+            {
+                glInstance.Vertex(xIncrement + startX, yIncrement + startY);
+
+                float tx = -yIncrement;
+                float ty = xIncrement;
+
+                xIncrement += tx * tangetial_factor;
+                yIncrement += ty * tangetial_factor;
+
+                xIncrement *= radial_factor;
+                yIncrement *= radial_factor;
+            }
+            glInstance.End();
         }
 
         #endregion
@@ -706,7 +723,7 @@ namespace P1S1
                 cutService.eCutSetOutput(ushortArray);
                 infoBorad.AddInfo("调用成功");
             }
-            catch (Exception)
+            catch (Exception exception)
             {
                 infoBorad.AddInfo("输入了错误的参数");
             }
@@ -925,12 +942,20 @@ namespace P1S1
             int taskHomingPin = 0;
             int inputIOVal = 0;//If the trigger way is high tri, than set it all 0, otherwise
             int axisNum = 0;
-
-            infoBorad.AddInfo("Z轴回零中");
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                infoBorad.AddInfo("Z轴回零中");
+            }));
             inputIOVal = HomingWithCertainAxis(4, inputIOVal, 2);
-            infoBorad.AddInfo("Y轴回零中");
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                infoBorad.AddInfo("Y轴回零中");
+            }));
             inputIOVal = HomingWithCertainAxis(3, inputIOVal, 1);
-            infoBorad.AddInfo("X轴回零中");
+            this.Dispatcher.Invoke(new Action(() =>
+            {
+                infoBorad.AddInfo("X轴回零中");
+            }));
             inputIOVal = HomingWithCertainAxis(taskHomingPin, inputIOVal, axisNum);
 
             this.Dispatcher.Invoke(new Action(() =>
@@ -1074,7 +1099,7 @@ namespace P1S1
                 var strArray = (AddLine_end.Text).Split(',');
                 for (int i = 0; i < strArray.Length; i++)
                     pos[i] = double.Parse(strArray[i]);
-                
+
                 var result = cutService.CutAddLine(pos, vel, ini_maxvel, acc);
                 infoBorad.AddInfo("调用成功");
             }
@@ -1113,12 +1138,12 @@ namespace P1S1
                 var strArray = (MoveAtSpeed_Acceleration.Text).Split(',');
                 for (int i = 0; i < strArray.Length; i++)
                     Acceleration[i] = double.Parse(strArray[i]);
-                
+
                 var MaxSpeed = new double[9];
                 strArray = (MoveAtSpeed_MaxSpeed.Text).Split(',');
                 for (int i = 0; i < strArray.Length; i++)
                     MaxSpeed[i] = double.Parse(strArray[i]);
-                
+
                 var result = cutService.MoveAtSpeed(axis, Acceleration, MaxSpeed);
                 infoBorad.AddInfo("调用成功");
             }
@@ -1130,7 +1155,6 @@ namespace P1S1
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            OnRotating = true;
             MatchKeyCodeForRotate(e, Key.W, ref rotateAngleXAxis, -2.0);
             MatchKeyCodeForRotate(e, Key.S, ref rotateAngleXAxis, 2.0);
             MatchKeyCodeForRotate(e, Key.A, ref rotateAngleYAxis, -2.0);
@@ -1139,7 +1163,38 @@ namespace P1S1
             MatchKeyCodeForRotate(e, Key.E, ref rotateAngleZAxis, 2.0);
             MatchKeyCodeForGlDisplayRange(e, Key.R, ref glRangeNum, -1.0);
             MatchKeyCodeForGlDisplayRange(e, Key.F, ref glRangeNum, 1.0);
+            MatchJogKey(e.Key);
             MatchKeyCodeForDisplayTestingArea(e, Key.P);
+        }
+
+        private void Window_KeyUp(object sender, KeyEventArgs e)
+        {
+            OnRotating = false;
+            var dic = new Dictionary<string, string>() { 
+            { "Up",     "ManualYUp" },
+            { "Down",   "ManualYDown" }, 
+            { "Right",  "ManualXUp" }, 
+            { "Left",   "ManualXDown" },
+            { "PageUp",  "ManualZUp" }, 
+            { "Next",   "ManualZDown" }};
+            var value = dic.SingleOrDefault(item => item.Key == e.Key.ToString()).Value;
+            if (value != null)
+                cutService.EStop();
+        }
+
+        //PgDn Next PgUp Prior
+        private void MatchJogKey(Key key)
+        {
+            var dic = new Dictionary<string, string>() { 
+            { "Up",     "ManualYUp" },
+            { "Down",   "ManualYDown" }, 
+            { "Right",  "ManualXUp" }, 
+            { "Left",   "ManualXDown" },
+            { "PageUp",  "ManualZUp" }, 
+            { "Next",   "ManualZDown" }};
+            var value = dic.SingleOrDefault(item => item.Key == key.ToString()).Value;
+            if (value != null)
+                JogControl(value);
         }
 
         private void MatchKeyCodeForDisplayTestingArea(KeyEventArgs e, Key key)
@@ -1151,7 +1206,10 @@ namespace P1S1
         private void MatchKeyCodeForRotate(KeyEventArgs e, Key keyCode, ref double angle, double stepChangeValue)
         {
             if (e.Key == keyCode)
+            {
+                OnRotating = true;
                 angle += stepChangeValue;
+            }
         }
 
         private void MatchKeyCodeForGlDisplayRange(KeyEventArgs e, Key keyCode, ref double range, double stepChangeValue)

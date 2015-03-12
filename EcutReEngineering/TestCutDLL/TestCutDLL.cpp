@@ -83,12 +83,98 @@ typedef eCutError(*eCutSetOutputFunc)(
 	INT16U DigitalOut[]
 	);
 
+LPCWSTR stringToLPCWSTR(std::string orig);
+eCutPosition GeneratePositon(double x, double y, double z);
+eCutCartesian GenerateCartesian(double x, double y, double z);
+
+void CheckResult(int flag)
+{
+	char charArr[200];
+	if (flag == 0 || flag == 3)
+	{
+		sprintf(charArr, "\ninvoke success");
+	}
+	else
+	{
+		sprintf(charArr, "\ninvoke failed");
+	}
+	OutputDebugString(stringToLPCWSTR(charArr));
+
+}
+
+//0 & 3 Means Success
+void TestDepthFunctionWithLine()
+{
+	char charArr[200];
+	int DeviceNums = GetDeviceNum();
+	if (DeviceNums)
+	{
+		
+		//Open ASU
+		sprintf(charArr, "Cut exist addcircle test begin");
+		OutputDebugString(stringToLPCWSTR(charArr));
+		eCutDevice cutHandler = eCutOpen(0);
+		eCutError result = eCutConfigDeviceDefault(cutHandler);
+		result = eCutSetStepsPerUnitSmoothCoff(cutHandler, 50,
+			new int[9]{1600, 1600, 1600},new int[9],16);
+		int stepArray[9];
+		result = eCutGetSteps(cutHandler, stepArray);
+		eCutSetCurrentPostion(cutHandler, &GeneratePositon(0, 0, 0));
+		eCutSetCoordinate(cutHandler, new double[9]{0,0,0,0,0,0,0,0});
+		//AddLineTest
+		result = eCutAddLine(cutHandler, &GeneratePositon(20, 0, 0), 5, 5, 5);
+		eCutAddCircle(cutHandler, &GeneratePositon(20, 0, 0), &GenerateCartesian(15, 0, 0), &GenerateCartesian(0, 0, 1),0,5,5,5);
+		eCutAddLine(cutHandler, &GeneratePositon(20, -20, 0), 5, 5, 5);
+		eCutAddLine(cutHandler, &GeneratePositon(0, -20, 0), 5, 5, 5);
+		eCutAddLine(cutHandler, &GeneratePositon(0, -0, 0), 5, 5, 5);
+		while (true)
+		{
+			int activeDepth = eCutActiveDepth(cutHandler);
+			int queueDepth  = eCutQueueDepth(cutHandler);
+			eCutGetSteps(cutHandler, stepArray);
+			sprintf(charArr, "\nactiveDepth: %d", activeDepth);
+			OutputDebugString(stringToLPCWSTR(charArr));
+			sprintf(charArr, "\queueDepth: %d",   queueDepth);
+			OutputDebugString(stringToLPCWSTR(charArr));
+			sprintf(charArr, "\nPosition X:%fX:%fY", stepArray[0] / (1600.0 * 16), stepArray[1] / (1600.0 * 16));
+			OutputDebugString(stringToLPCWSTR(charArr));
+			Sleep(1500);
+			if (queueDepth == 0)
+			{
+				sprintf(charArr, "\nTestEnd");
+				OutputDebugString(stringToLPCWSTR(charArr));
+				exit(0);
+			}
+		}
+	}
+}
+
+eCutCartesian GenerateCartesian(double x, double y, double z)
+{
+	eCutCartesian pos;
+	pos.x = x;
+	pos.y = y;
+	pos.z = z;
+	return pos;
+}
+
+eCutPosition GeneratePositon(double x, double y, double z)
+{
+	eCutPosition pos;
+	pos.a = pos.b = pos.c = pos.u = pos.v = pos.w = 0;
+	pos.x = x;
+	pos.y = y;
+	pos.z = z;
+	return pos;
+}
 
 int _tmain(int argc, _TCHAR* argv[])
 {
+	TestDepthFunctionWithLine();
+	
 	wstring  dllName = L"eCutDevice.dll";
 	HMODULE hDLL = LoadLibrary(dllName.c_str());
-	GetDeviceNumFunc GetDeviceNumfp = GetDeviceNumFunc(GetProcAddress(hDLL, "GetDeviceNum"));
+	/*GetDeviceNumFunc GetDeviceNumfp = GetDeviceNumFunc(GetProcAddress(hDLL, "GetDeviceNum"));
 	GetDeviceInfoFunc GetDeviceInfofp = GetDeviceInfoFunc(GetProcAddress(hDLL, "GetDeviceInfo"));
 	eCutOpenFunc eCutOpenfp = eCutOpenFunc(GetProcAddress(hDLL, "eCutOpen"));
 	eCutCloseFunc eCutClosefp = eCutCloseFunc(GetProcAddress(hDLL, "eCutClose"));
@@ -126,51 +212,42 @@ int _tmain(int argc, _TCHAR* argv[])
 	eCutSetAxisOutputConfigFunc eCutSetAxisOutputConfigfp = eCutSetAxisOutputConfigFunc(GetProcAddress(hDLL, "eCutSetAxisOutputConfig"));
 	eCutSetInputIOEngineDirFunc eCutSetInputIOEngineDirfp = eCutSetInputIOEngineDirFunc(GetProcAddress(hDLL, "eCutSetInputIOEngineDir"));
 	eCutSetG92StepDirEncPinFunc eCutSetG92StepDirEncPinfp = eCutSetG92StepDirEncPinFunc(GetProcAddress(hDLL, "eCutSetG92StepDirEncPin"));
-	eCutSetOutputFunc eCutSetOutputfp = eCutSetOutputFunc(GetProcAddress(hDLL, "eCutSetOutput"));
-	char buf[1000];
-	int cutNumber = GetDeviceNum();
-	String^ path = Directory::GetCurrentDirectory();
-	int result = GetDeviceNumfp();
-	cout << result << endl;
-	eCut = eCutOpenfp(0);
-	cout << eCut << endl;
-	eCutConfigDeviceDefaultfp(eCut);
-	/*cout << error << endl;
+	eCutSetOutputFunc eCutSetOutputfp = eCutSetOutputFunc(GetProcAddress(hDLL, "eCutSetOutput"));*/
+	eCut = eCutOpen(0);
+	eCutConfigDeviceDefault(eCut);
 	eCutPosition Position;
-	Position.a = 0;
 	Position.x = 0;
 	Position.y = 0;
 	Position.z = 0;
-	error = eCutSetCurrentPostionfp(eCut, &Position);*/
-	/*eCutSetAxisOutputConfig(eCut, new INT8U[16]{0, 1, 2, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}, 
-		new INT8U[16]{8, 9, 10, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
-		new boolean[4]{true, true, true, true}, 0, 0);*/
-	//eCutSetStepsPerUnitSmoothCoff(eCut, 50, new int[4]{2000, 2000, 2000, 2000}, new int[4], 16);
-	eCutSetStepsPerUnitSmoothCoff(eCut, 50, new int[1]{2000}, new int[4], 16);
-	//eCutSetAccelarationMaxSpeed(eCut, new double[4]{50}, new double[4]{50});
-	eCutSetAccelarationMaxSpeed(eCut, new double[1]{50}, new double[1]{50});
-	//eCutMoveAbsolute(eCut, 1, new double[4]{20000});
-	//eCutMoveAbsolute(eCut, 1, new double[4]{-20000});
-	eCutMoveAbsolute(eCut, 1, new double[1]{20000});
-	eCutMoveAbsolute(eCut, 1, new double[1]{-20000});
-	/*cout << "Result of set currentPostion" << error << endl;
 	Position.a = 0;
-	Position.x = 0;
-	Position.y = -500;
+	Position.b = 0;
+	Position.c = 0;
+	Position.u = 0;
+	Position.v = 0;
+	Position.w = 0;
+	eCutSetCurrentPostion(eCut, &Position);
+	eCutSetStepsPerUnitSmoothCoff(eCut, 50, new int[4]{1600, 1600, 1600, 1600}, new int[4], 16);
+	Position.x = -5;
+	Position.y = 5;
 	Position.z = 0;
-	eCutAddLinefp(eCut, &Position, 50.0, 50.0, 50.0);
-
+	Position.a = 0;
+	Position.b = 0;
+	Position.c = 0;
+	Position.u = 0;
+	Position.v = 0;
+	Position.w = 0;
+	eCutAddLine(eCut, &Position, 5.0, 5.0, 5.0);
 	for (size_t i = 0; i < 15; i++)
 	{
-	int pulseArr[9];
-	Sleep(200);
-	eCutGetStepsfp(eCut, pulseArr);
-	for (size_t j = 0; j < 4; j++)
-	{
-	cout << "+" << pulseArr[j];
+		int pulseArr[9];
+		Sleep(2000);
+		//eCutGetSteps(eCut, pulseArr);
+		/*for (size_t j = 0; j < 4; j++)
+		{
+			cout << "+" << pulseArr[j];
+		}
+		cout << endl;*/
 	}
-	cout << endl;
-	}*/
 }
 
 

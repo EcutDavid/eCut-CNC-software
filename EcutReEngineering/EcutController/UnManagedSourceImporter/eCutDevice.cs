@@ -46,7 +46,7 @@ namespace EcutController
         /// </summary>
         /// <param name="Num">为0:PC连接的第一个eCut，为1:PC连接的第二个eCut，在PC只与一个eCut相连时，此项配为0即可</param>
         /// <returns>eCut资源句柄</returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern IntPtr eCutOpen(int Num);
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="SpindlePostion">主轴脉冲计数值的存储区域</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutGetSpindlePostion(IntPtr eCut, ref ushort SpindlePostion);
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace EcutController
         /// <param name="StepNeg">脉冲反相掩码，0 --> 任何轴脉冲输出不反相， 1 --> X轴脉冲输出反相， 5 --> X与Z轴脉冲输出反相</param>
         /// <param name="DirNeg">方向反相掩码，0 --> 任何轴方向输出不反相， 1 --> X轴方向输出反相， 5 --> X与Z轴方向输出反相</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetAxisOutputConfig(IntPtr eCut, [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]byte[] StepSel,
                 [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]byte[] DirSel,
                 [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]bool[] Enable,
@@ -84,7 +84,7 @@ namespace EcutController
         /// <param name="InputIOPin">输入引脚映射 0--> Input0 2--> Input2 7--> Input7</param>
         /// <param name="EngineDirections">改变运动方向</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetInputIOEngineDir(IntPtr eCut,
                 UInt64 InputIOEnable,
                 UInt64 InputIONeg,
@@ -96,7 +96,7 @@ namespace EcutController
         /// 获取当前PC检测到的eCut数量
         /// </summary>
         /// <returns>与PC相连的eCut总数</returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int GetDeviceNum();
 
         /// <summary>
@@ -104,7 +104,7 @@ namespace EcutController
         /// </summary>
         /// <param name="Num">为0:PC连接的第一个eCut，为1:PC连接的第二个eCut，在PC只与一个eCut相连时，此项配为0即可</param>
         /// <param name="SerialString">用于存储序列号的字节数组</param>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError GetDeviceInfo(int Num, byte[] SerialString);
 
         /// <summary>
@@ -112,7 +112,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutClose(IntPtr eCut);
 
         /// <summary>
@@ -120,7 +120,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutConfigDeviceDefault(IntPtr eCut);
 
         /// <summary>
@@ -129,7 +129,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="Input">用于存储输入信号值的存储区域</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutGetInputIO(IntPtr eCut, ref int Input);
 
         /// <summary>
@@ -138,7 +138,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="Steps">各轴相对于机械原点的脉冲总量的存储区域</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutGetSteps(IntPtr eCut, [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]Int32[] Steps);
 
         /// <summary>
@@ -147,7 +147,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="Out">bit 0 --> OutPut0 bit 1 --> OutPut1 bit 2 --> OutPut2</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetIOOutput(IntPtr eCut, ushort Out);
 
         /// <summary>
@@ -156,7 +156,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="Out">主轴速率配置值，最大为65535</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetSpindle(IntPtr eCut, ushort Out);
 
 
@@ -165,7 +165,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutEStop(IntPtr eCut);
 
         /// <summary>
@@ -174,7 +174,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="pSmoothCoff">板卡细分数的存储区域</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutGetSmoothCoff(IntPtr eCut, ref UInt32 pSmoothCoff);
 
         /// <summary>
@@ -183,7 +183,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="StepsPerUnit">板卡脉冲每毫米的参数配置值的存储区域</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutGetStepsPerUnit(IntPtr eCut, [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)] int[] StepsPerUnit);
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace EcutController
         /// <param name="StepNeg">脉冲反相掩码，0 --> 任何轴脉冲输出不反相， 1 --> X轴脉冲输出反相， 5 --> X与Z轴脉冲输出反相</param>
         /// <param name="DirNeg">方向反相掩码，0 --> 任何轴方向输出不反相， 1 --> X轴方向输出反相， 5 --> X与Z轴方向输出反相</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetStepNegAndDirNeg(IntPtr eCut, Byte StepNeg, Byte DirNeg);
 
         /// <summary>
@@ -204,7 +204,7 @@ namespace EcutController
         /// <param name="AnalogOut"></param>
         /// <param name="DigitalOut"></param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetOutput(IntPtr eCut, UInt16 Sync,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 20)]Int16[] AnalogOut,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 16)]UInt16[] DigitalOut);
@@ -218,10 +218,17 @@ namespace EcutController
         /// <param name="WorkOffset">保留参数，暂不使用</param>
         /// <param name="SmoothCoff">细分数</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetStepsPerUnitSmoothCoff(IntPtr eCut, ushort DelayBetweenPulseAndDir,
         [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]int[] StepsPerAxis,
         [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]int[] WorkOffset, int SmoothCoff);
+
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern eCutError eCutSetG92StepDirEncPin(eCutDevice eCut, UInt32[] G92Offset, 
+        UInt16 StepNegAndDirNeg, sbyte[] EncoderAPin, byte[] EncoderBPin, byte MPGIndex);
+
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
+        public static extern eCutError eCutGetEncoderPostion(eCutDevice eCut, UInt16[] EncoderPostion);
 
         #endregion
 
@@ -233,7 +240,7 @@ namespace EcutController
         /// <param name="AxisMask">运动轴使能掩码，0 --> 任何轴的运动都被禁止， 1 --> X轴运动使能 3 --> X,Y轴运动使能</param>
         /// <param name="PositionGiven">运动目的位置，单位毫米 0 --> X 1 --> Y 2 --> Z 3 --> A</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutMoveAbsolute(IntPtr eCut, ushort AxisMask, [MarshalAs(UnmanagedType.LPArray, SizeConst = 9)] double[] PositionGiven);
 
         /// <summary>
@@ -243,7 +250,7 @@ namespace EcutController
         /// <param name="Acceleration">加速度 0 --> X轴 1 --> Y轴 2 --> Z轴 3 --> A轴</param>
         /// <param name="MaxSpeed">最大允许速度 0 --> X轴 1 --> Y轴 2 --> Z轴 3 --> A轴</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetAccelarationMaxSpeed(IntPtr eCut,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]double[] Acceleration,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]double[] MaxSpeed);
@@ -256,7 +263,7 @@ namespace EcutController
         /// <param name="Acceleration">加速度 0 --> X轴 1 --> Y轴 2 --> Z轴 3 --> A轴</param>
         /// <param name="MaxSpeed">最大允许速度 0 --> X轴 1 --> Y轴 2 --> Z轴 3 --> A轴</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutMoveAtSpeed(IntPtr eCut, ushort AxisMask,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]double[] Acceleration,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]double[] MaxSpeed);
@@ -268,7 +275,7 @@ namespace EcutController
         /// <param name="MaxSoftLimit">允许运动到的最大机械位置 0 --> X轴 1 --> Y轴 2 --> Z轴 3 --> A轴</param>
         /// <param name="MinSoftLimit">允许运动到的最小机械位置 0 --> X轴 1 --> Y轴 2 --> Z轴 3 --> A轴</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetSoftLimit(IntPtr eCut,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)] double[] MaxSoftLimit,
             [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]double[] MinSoftLimit);
@@ -279,7 +286,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="MaxSpeed">板卡各轴最大运动速度的存储区域，单位毫米每分钟</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
 
         public static extern eCutError eCutGetMaxSpeed(IntPtr eCut, [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]Double[] MaxSpeed);
         /// <summary>
@@ -287,7 +294,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutStopAll(IntPtr eCut);
 
 
@@ -297,7 +304,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="Axis">0 --> X轴停止运动， 1 --> Y轴停止运动 2 --> Z轴停止运动</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutStop(IntPtr eCut, ushort Axis);
 
         /// <summary>
@@ -306,7 +313,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="Posi">机械坐标，单位毫米 0 --> X 1 --> Y 2 --> Z 3 --> A</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetCoordinate(IntPtr eCut, [MarshalAs(UnmanagedType.LPArray, SizeConst = 8)]double[] Posi);
 
         /// <summary>
@@ -316,7 +323,7 @@ namespace EcutController
         /// <param name="Axis">运动轴 0 --> X轴， 1 --> Y轴 2 --> Z轴</param>
         /// <param name="PositionGiven">运动目的位置，单位毫米 0 --> X 1 --> Y 2 --> Z 3 --> A</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutJogOn(IntPtr eCut, ushort Axis, double[]PositionGiven);
         #endregion
 
@@ -326,7 +333,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutResume(IntPtr eCut);
 
         /// <summary>
@@ -334,7 +341,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutPause(IntPtr eCut);
 
         /// <summary>
@@ -342,7 +349,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutAbort(IntPtr eCut);
 
         /// <summary>
@@ -350,7 +357,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutIsDone(IntPtr eCut);
 
         /// <summary>
@@ -359,7 +366,7 @@ namespace EcutController
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="Pos">期望配置坐标值的位置结构体</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetCurrentPostion(IntPtr eCut, ref eCutPosition Pos);//DONE
 
         /// <summary>
@@ -370,7 +377,7 @@ namespace EcutController
         /// <param name="vel">期望直线运动的速度</param>
         /// <param name="ini_maxvel">最大允许速度</param>
         /// <param name="acc">加速度</param>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutAddLine(IntPtr eCut, ref eCutPosition end, double vel, double ini_maxvel, double acc);
 
 
@@ -385,7 +392,7 @@ namespace EcutController
         /// <param name="vel">期望圆弧运动的速度</param>
         /// <param name="ini_maxvel">最大速度</param>
         /// <param name="acc">加速度</param>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutAddCircle(IntPtr eCut,
                 ref eCutPosition end,
                 ref eCutCartesian center,
@@ -401,7 +408,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int eCutActiveDepth(IntPtr eCut);
 
         /// <summary>
@@ -409,7 +416,7 @@ namespace EcutController
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern int eCutQueueDepth(IntPtr eCut);
 
         /// <summary>
@@ -419,20 +426,24 @@ namespace EcutController
         /// <param name="type">停止类型 </param>
         /// <param name="tolerance">精度要求，目标位值和当前位值的绝对值小于此数时规划结束了</param>
         /// <returns></returns>
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
+        [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetStopType(IntPtr eCut, eCutStopType type, double tolerance);
+
+
         #endregion
 
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public static extern int Add(int a, int b);
+        #region TEST P/I INVOKE
+        //[DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl)]
+        //public static extern int Add(int a, int b);
 
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public static extern void AddWithArray(int[] a, int[] b);
+        //[DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl)]
+        //public static extern void AddWithArray(int[] a, int[] b);
 
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public static extern void AddWithStruct(position pos);
+        //[DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl)]
+        //public static extern void AddWithStruct(position pos);
 
-        [DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Auto)]
-        public static extern void ImoprterInit();
+        //[DllImport("PI.dll", CallingConvention = CallingConvention.Cdecl)]
+        //public static extern void ImoprterInit();
+        #endregion
     }
 }

@@ -14,11 +14,6 @@ namespace EcutController
         private byte[] _stepPin = new byte[8];
         private byte[] _dirPin = new byte[8];
 
-        public EcutEntity()
-        {
-            eCutDevice.ImoprterInit();
-        }
-
         public bool Open(int num)
         {
             if (eCutHandler.ToInt64() == 0)
@@ -89,7 +84,8 @@ namespace EcutController
 
         public void EStop()
         {
-            var result = eCutDevice.eCutEStop(eCutHandler);
+            if(eCutHandler.ToInt64() != 0)
+                eCutDevice.eCutEStop(eCutHandler);
         }
 
         public bool StopCertainAxis(int axisNum)
@@ -212,7 +208,7 @@ namespace EcutController
             set
             {
                 _stepPin = value;
-                //eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
+                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
             }
         }
 
@@ -226,7 +222,7 @@ namespace EcutController
             set 
             {
                 stepNeg = value;
-                //eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true },stepNeg, dirNeg);
+                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
             }
         }
 
@@ -255,7 +251,7 @@ namespace EcutController
             set 
             {
                 _dirPin = value;
-                //eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
+                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
             }
         }
 
@@ -415,6 +411,8 @@ namespace EcutController
 
         public bool eCutJogOn(ushort Axis, double[] doubleArray)
         {
+            if (eCutHandler.ToInt64() == 0)
+                return false;
             return eCutError.eCut_True == eCutDevice.eCutJogOn(eCutHandler, Axis, doubleArray);
         }
     }

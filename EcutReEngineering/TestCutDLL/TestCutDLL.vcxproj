@@ -94,11 +94,9 @@
     <ClCompile Include="TestCutDLL.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="..\P1S1\bin\x86\Debug\PI.dll" />
     <None Include="eCutDevice.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Library Include="..\P1S1\bin\x86\Debug\PI.lib" />
     <Library Include="eCutDevice.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

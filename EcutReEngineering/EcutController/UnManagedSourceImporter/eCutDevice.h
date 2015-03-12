@@ -189,7 +189,6 @@ extern "C"
 		INT16S AnalogOut[],
 		INT16U DigitalOut[]
 		);
-
 }
 
 #endif
