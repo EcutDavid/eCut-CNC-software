@@ -94,9 +94,6 @@
     <ClCompile Include="TestCutDLL.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="eCutDevice.dll" />
-  </ItemGroup>
-  <ItemGroup>
     <Library Include="eCutDevice.lib" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

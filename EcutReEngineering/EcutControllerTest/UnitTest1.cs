@@ -17,16 +17,14 @@ namespace EcutControllerTest
             ecutService = new EcutEntity();
         }
 
+        /// <summary>
+        /// This test should be run with cut connected
+        /// </summary>
         [TestMethod]
-        public void eCutMoveAbsolute()
+        public void eCutOpen()
         {
             var handler = eCutDevice.eCutOpen(0);
-            eCutDevice.eCutConfigDeviceDefault(handler);
-            eCutDevice.eCutSetStepsPerUnitSmoothCoff(handler, 50, new int[9] { 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000, 2000 }, new int[9], 16);
-            //eCutDevice.eCutSetAccelarationMaxSpeed(handler, new double[9] { 12, 0, 0, 0, 0, 0, 0, 0, 0 }, new double[9] { 50, 0, 0, 0, 0, 0, 0, 0, 0 });
-            var pos = new eCutPosition() { x = 500, y = 50, z = 50 };
-            eCutDevice.eCutAddLine(handler,ref pos, 5.0, 5.0, 5.0);
-            eCutDevice.eCutEStop(handler);
+            Assert.AreNotEqual(0, handler.ToInt32());
         }
     }
 }

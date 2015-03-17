@@ -415,5 +415,6 @@ namespace EcutController
                 return false;
             return eCutError.eCut_True == eCutDevice.eCutJogOn(eCutHandler, Axis, doubleArray);
         }
+        
     }
 }
