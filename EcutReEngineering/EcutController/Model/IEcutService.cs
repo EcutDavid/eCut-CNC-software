@@ -50,8 +50,6 @@ namespace EcutController
 
         object MoveAtSpeed(ushort axis, double[] Acceleration, double[] MaxSpeed);
 
-        ushort GetSpindlePostion();
-
         object SetCurrentPostion(double[] pos);
 
         object CutAddLine(double[] pos, double vel, double ini_maxvel, double acc);
@@ -63,6 +61,5 @@ namespace EcutController
         bool eCutSetOutput(UInt16[] DigitalOut);
 
         bool eCutJogOn(ushort Axis, double[] doubleArray);
-        //bool 
     }
 }

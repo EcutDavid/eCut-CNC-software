@@ -96,33 +96,115 @@ eCutPosition GeneratePositon(double x, double y, double z)
 	return pos;
 }
 
+void GerserialNumber()
+{
+	char serialNumber[12];
+	eCutError result = GetDeviceInfo(0, serialNumber);//调用完毕后即可在serialNumber拿到板卡序列号
+}
+
+void SetStepsPerUnitSmoothCoff()
+{
+	//设置脉冲方向延时50,脉冲细分数32, X,Y,Z,A轴脉冲每毫米皆为400脉冲/毫米
+	eCutError result = eCutSetStepsPerUnitSmoothCoff(eCut, 50, new int[9]{400, 400, 400, 400}, new int[9], 32);
+}
+
+void SmoothCoffStepsPerUnit()
+{
+	unsigned int smoothCoff;
+	//eCutError result = eCutGetSmoothCoff(eCut, &smoothCoff);
+
+	int stepsPerUnitArray[9];
+	eCutError result = eCutGetStepsPerUnit(eCut, stepsPerUnitArray);
+}
+
+void SetCoordinate()
+{
+	double posArr[9] = { 30, 40, 50 };
+	//配置 X轴机械坐标30mm Y轴机械坐标40mm Z轴机械坐标50mm
+	eCutError result = eCutSetCoordinate(eCut, posArr);
+}
+
+void MaxSpeedAndSoftLimit()
+{
+	//double maxSpeedArr[9];
+	//eCutError result = eCutGetMaxSpeed(eCut, maxSpeedArr);
+
+	double maxSpeedArr[9] = {100, 100, 100, 100};
+	double minSoftLimit[9] = { -100, -100, -100, -100 };
+	eCutError result = eCutSetSoftLimit(eCut, maxSpeedArr, minSoftLimit);
+
+	double acceleration[9] = {5, 5, 5, 5};
+	double maxSpeed[9] = {10, 10, 10, 10};
+	result = eCutSetAccelarationMaxSpeed(eCut, acceleration, maxSpeed);
+}
+
+void Move()
+{
+	char charArr[200];
+	//X,Y,Z,A轴无限运动
+	eCutMoveAtSpeed(eCut, 15, new double[9]{5, 5, 5, 5, 5}, new double[9]{5, 5, 5, 5, 5});
+	//Y轴无限运动
+	eCutMoveAtSpeed(eCut, 2, new double[9]{5, 5, 5, 5, 5}, new double[9]{5, 5, 5, 5, 5});
+
+	eCutJogOn(eCut, 1,new double[9]{0, 50});
+	eCutMoveAbsolute(eCut, 15, new double[9]{0, 50, 50, 50});
+	while (true)
+	{
+		int steps[4];
+		eCutGetSteps(eCut, steps);
+		sprintf(charArr, "\n steps of x: %d y: %d b: %d", steps[0], steps[1], steps[4]);
+		OutputDebugString(stringToLPCWSTR(charArr));
+		Sleep(500);
+	}
+}
+
+void CutPCMoveDone()
+{
+	eCutError result = eCutIsDone(eCut);
+	eCutPosition Position;
+	Position.x = 0; Position.y = 0; Position.z = 0;
+	Position.a = 0; Position.b = 0; Position.c = 0;
+	Position.u = 0; Position.v = 0; Position.w = 0;
+	eCutSetCurrentPostion(eCut, &Position);
+	Position.x = -5000; Position.y = 5; Position.z = 0;
+	Position.a = 0; Position.b = 0; Position.c = 0;
+	Position.u = 0; Position.v = 0; Position.w = 0;
+	result = eCutAddLine(eCut, &Position, 5, 5, 5);
+    result = eCutIsDone(eCut);
+}
+
+void GetInput()
+{
+	//在I5有输入，其它I无输入的情况下inputArr[0]得到32
+	unsigned short inputArr[1];
+	eCutGetInputIO(eCut, inputArr);
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
-	TestDepthFunctionWithLine();
+	char charArr[200];
+	//TestDepthFunctionWithLine();
+	eCutDevice cutHandler;
 	eCut = eCutOpen(0);
 	eCutConfigDeviceDefault(eCut);
+	GetInput();
 	eCutPosition Position;
-	Position.x = 0;
-	Position.y = 0;
-	Position.z = 0;
-	Position.a = 0;
-	Position.b = 0;
-	Position.c = 0;
-	Position.u = 0;
-	Position.v = 0;
-	Position.w = 0;
-	eCutSetCurrentPostion(eCut, &Position);
-	eCutSetStepsPerUnitSmoothCoff(eCut, 50, new int[4]{1600, 1600, 1600, 1600}, new int[4], 16);
-	Position.x = -5;
-	Position.y = 5;
-	Position.z = 0;
-	Position.a = 0;
-	Position.b = 0;
-	Position.c = 0;
-	Position.u = 0;
-	Position.v = 0;
-	Position.w = 0;
+	Position.x = 0; Position.y = 0; Position.z = 0;
+	Position.a = 0; Position.b = 0; Position.c = 0;
+	Position.u = 0; Position.v = 0; Position.w = 0;
+	eCutSetCurrentPostion(eCut, new eCutPosition{-5000});
+	Position.x = -5000; Position.y = 5; Position.z = 0;
+	Position.a = 0 ; Position.b = 0; Position.c = 0;
+	Position.u = 0 ; Position.v = 0; Position.w = 0;
 	eCutAddLine(eCut, &Position, 5.0, 5.0, 5.0);
+	while (true)
+	{
+		int steps[4];
+		eCutGetSteps(eCut, steps);
+		sprintf(charArr, "\n steps of x: %d %d", steps[0], eCutIsDone(eCut));
+		OutputDebugString(stringToLPCWSTR(charArr));
+		Sleep(500);
+	}
 	for (size_t i = 0; i < 15; i++)
 	{
 		int pulseArr[9];
@@ -137,7 +219,7 @@ int _tmain(int argc, _TCHAR* argv[])
 }
 
 
-LPCWSTR stringToLPCWSTR(std::string orig)
+LPCWSTR stringToLPCWSTR(string orig)
 {
 	size_t origsize = orig.length() + 1;
 	const size_t newsize = 100;

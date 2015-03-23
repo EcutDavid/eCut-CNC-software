@@ -40,6 +40,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entity\EcutEntity.cs" />
+    <Compile Include="Model\CutException.cs" />
     <Compile Include="Model\IEcutService.cs" />
     <Compile Include="Model\ControllerConfigurationStruct.cs" />
     <Compile Include="Entity\CutConfiguration.cs" />

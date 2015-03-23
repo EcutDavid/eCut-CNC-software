@@ -20,12 +20,6 @@ namespace EcutController
         eCut_False = 4,
     }
 
-
-    public struct position
-    {
-        public double x, y, z;
-    };
-
     public struct eCutPosition
     {
         public double x, y, z;
@@ -213,10 +207,10 @@ namespace EcutController
         /// 配置板卡参数：脉冲每毫米，细分数，脉冲方向延时
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
-        /// <param name="DelayBetweenPulseAndDir">脉冲方向延时</param>
+        /// <param name="DelayBetweenPulseAndDir">脉冲方向延时，单位us</param>
         /// <param name="StepsPerAxis">脉冲每毫米 0 --> X轴脉冲每毫米 1 --> Y轴脉冲每毫米</param>
         /// <param name="WorkOffset">保留参数，暂不使用</param>
-        /// <param name="SmoothCoff">细分数</param>
+        /// <param name="SmoothCoff">脉冲细分数</param>
         /// <returns></returns>
         [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutSetStepsPerUnitSmoothCoff(IntPtr eCut, ushort DelayBetweenPulseAndDir,
@@ -302,7 +296,7 @@ namespace EcutController
         /// 停止由板卡规划的特定的轴的运动,NEED TEST
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
-        /// <param name="Axis">0 --> X轴停止运动， 1 --> Y轴停止运动 2 --> Z轴停止运动</param>
+        /// <param name="Axis">轴索引 0 --> X轴停止运动， 1 --> Y轴停止运动 2 --> Z轴停止运动</param>
         /// <returns></returns>
         [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutStop(IntPtr eCut, ushort Axis);
@@ -353,10 +347,10 @@ namespace EcutController
         public static extern eCutError eCutAbort(IntPtr eCut);
 
         /// <summary>
-        /// 当前的PC规划运动已经结束
+        /// 判断当前的PC规划运动是否结束
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
-        /// <returns></returns>
+        /// <returns>为3(eCut_True),当前没有任何PC规划运动正在进行，为4(eCut_False)当前有正在运行的PC规划运动</returns>
         [DllImport("eCutDevice.dll", CallingConvention = CallingConvention.Cdecl)]
         public static extern eCutError eCutIsDone(IntPtr eCut);
 
@@ -370,7 +364,7 @@ namespace EcutController
         public static extern eCutError eCutSetCurrentPostion(IntPtr eCut, ref eCutPosition Pos);//DONE
 
         /// <summary>
-        /// 添加直线运动轨迹
+        /// 添加直线插补运动轨迹
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="end">目的终点</param>
@@ -382,7 +376,7 @@ namespace EcutController
 
 
         /// <summary>
-        /// eCut PC规划添加圆弧  由目的终点，圆心，法线确定圆平面
+        /// eCut PC规划添加圆弧插补  由目的终点，圆心，法线确定圆平面
         /// </summary>
         /// <param name="eCut">eCut资源句柄</param>
         /// <param name="end">目的终点</param>

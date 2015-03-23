@@ -14,7 +14,7 @@ namespace EcutControllerTest
         [TestInitialize]
         public void TestInit()
         {
-            ecutService = new EcutEntity();
+            ecutService = EcutEntity.GetCutServiceInstance();
         }
 
         /// <summary>

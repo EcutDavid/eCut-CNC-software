@@ -29,7 +29,7 @@ namespace P1S1
         {
             InitializeComponent();
             InitControls();
-            cutService = new EcutEntity();
+            cutService = EcutEntity.GetCutServiceInstance();
             timer.Interval = TimeSpan.FromSeconds(0.1);
             timer.Start();
             TestDepth();
@@ -753,8 +753,8 @@ namespace P1S1
                 return;
             try
             {
-                UInt16 result = cutService.GetSpindlePostion();
-                GetSpindlePostion_Result.Content = result;
+                //UInt16 result = cutService.GetSpindlePostion();
+                //GetSpindlePostion_Result.Content = result;
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception)

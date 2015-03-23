@@ -11,10 +11,3 @@ C:\Users\Guan\Desktop\ReEngRecord\EcutReEngineering\Product1\Utility\bin\Debug\E
 C:\Users\Guan\Desktop\ReEngRecord\EcutReEngineering\Product1\Utility\obj\Debug\Utility.csprojResolveAssemblyReference.cache
 C:\Users\Guan\Desktop\ReEngRecord\EcutReEngineering\Product1\Utility\obj\Debug\Utility.dll
 C:\Users\Guan\Desktop\ReEngRecord\EcutReEngineering\Product1\Utility\obj\Debug\Utility.pdb
-E:\WorkPath\eCut-\EcutReEngineering\Utility\bin\Debug\Utility.dll
-E:\WorkPath\eCut-\EcutReEngineering\Utility\bin\Debug\Utility.pdb
-E:\WorkPath\eCut-\EcutReEngineering\Utility\bin\Debug\EcutController.dll
-E:\WorkPath\eCut-\EcutReEngineering\Utility\bin\Debug\EcutController.pdb
-E:\WorkPath\eCut-\EcutReEngineering\Utility\obj\Debug\Utility.csprojResolveAssemblyReference.cache
-E:\WorkPath\eCut-\EcutReEngineering\Utility\obj\Debug\Utility.dll
-E:\WorkPath\eCut-\EcutReEngineering\Utility\obj\Debug\Utility.pdb

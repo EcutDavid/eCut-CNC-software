@@ -14,6 +14,13 @@ namespace EcutController
         private byte[] _stepPin = new byte[8];
         private byte[] _dirPin = new byte[8];
 
+        public static IEcutService GetCutServiceInstance()
+        { 
+            return new EcutEntity();
+        }
+
+        private EcutEntity(){}
+
         public bool Open(int num)
         {
             if (eCutHandler.ToInt64() == 0)
@@ -30,7 +37,6 @@ namespace EcutController
         {
             if (eCutHandler.ToInt64() != 0)
             {
-                //no movement after close comunication
                 eCutDevice.eCutEStop(eCutHandler);
                 eCutDevice.eCutClose(eCutHandler);
                 eCutHandler = (IntPtr)0;
@@ -54,7 +60,7 @@ namespace EcutController
                 return steps;
             return null;
         }
-
+        
         public void AddLine(double[] postion, double velocity, double acceleration)
         {
             eCutPosition pos = new eCutPosition();
@@ -342,13 +348,6 @@ namespace EcutController
             return eCutDevice.eCutMoveAtSpeed(eCutHandler, axis, Acceleration, MaxSpeed);
         }
 
-        //TODO:测试该函数
-        public ushort GetSpindlePostion()
-        {
-            ushort pos = 0;
-            eCutDevice.eCutGetSpindlePostion(eCutHandler, ref pos);
-            return pos;
-        }
 
         public object SetCurrentPostion(double[] pos)
         {

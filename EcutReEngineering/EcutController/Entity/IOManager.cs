@@ -16,7 +16,8 @@ namespace EcutController
 
         internal static bool SetIO(IntPtr cutHandler, UInt16 IOOutPut)
         {
-            if ((cutHandler.ToInt64() != 0) && (eCutError.eCut_True == eCutDevice.eCutSetIOOutput(cutHandler, IOOutPut)))
+            //TODO
+            if ((cutHandler.ToInt64() != 0) && (eCutError.eCut_True == eCutDevice.eCutSetOutput(cutHandler, 0, new Int16[9], new UInt16[4] { IOOutPut, 0, 0, 0 })))
             {
                 return true;
             }
