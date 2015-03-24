@@ -180,6 +180,41 @@ void GetInput()
 	eCutGetInputIO(eCut, inputArr);
 }
 
+//lib不是最新的导致此处现在无法编译
+//void SetOutput()
+//{
+//	//配置OUT5 与OUT6输出为高
+//	eCutSetOutput(eCut, 0, new short[4], new unsigned short[4]{32 + 64});
+//}
+
+void AxisOutputConfig()
+{
+	//配置X,Y等各轴脉冲输出于X,Y等各轴脉冲输出引脚输出，使能X,Y,Z,A轴输出，方向与脉冲不反相
+	eCutSetAxisOutputConfig(eCut, new INT8U[11]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 0x60, 0x62}, 
+		new INT8U[11]{ 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x61, 0x63},
+		new BOOLEAN[9]{true, true, true, true}, 0, 0);
+
+	//与例1的区别是，X，Y轴输出实际引脚交换
+	eCutSetAxisOutputConfig(eCut, new INT8U[11]{ 1, 0, 2, 3, 4, 5, 6, 7, 8, 0x60, 0x62},
+		new INT8U[11]{ 0x11, 0x10, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x61, 0x63},
+		new BOOLEAN[9]{true, true, true, true}, 0, 0);
+
+	//与例1的区别是，X，Y轴脉冲，方向输出反相
+	eCutSetAxisOutputConfig(eCut, new INT8U[11]{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 0x60, 0x62},
+		new INT8U[11]{ 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x61, 0x63},
+		new BOOLEAN[9]{true, true, true, true}, 3, 3);
+}
+
+void SetInputIOEngineDir()
+{
+	uINT64U inputIOEnable;
+	inputIOEnable.all = 3;
+	uINT64U inputIONeg;
+	inputIONeg.all = 0;
+	//使能X轴正，负限位功能，高电平触发，X++ 触发引脚为IN1 X--出发引脚为IN2
+	eCutSetInputIOEngineDir(eCut, inputIOEnable, inputIONeg, new INT8U[30]{1,2},new INT8S[10]);
+}
+
 int _tmain(int argc, _TCHAR* argv[])
 {
 	char charArr[200];
@@ -197,6 +232,14 @@ int _tmain(int argc, _TCHAR* argv[])
 	Position.a = 0 ; Position.b = 0; Position.c = 0;
 	Position.u = 0 ; Position.v = 0; Position.w = 0;
 	eCutAddLine(eCut, &Position, 5.0, 5.0, 5.0);
+	//X运动到PC规划工作坐标系-5000，其它轴运动到0
+	eCutAddLine(eCut, new eCutPosition{ -5000 }, 5, 5, 5);
+	//X运动到PC规划工作坐标系-5000，Y 100,其它轴运动到0
+	eCutAddLine(eCut, new eCutPosition{ 50,100 }, 5, 5, 5);
+
+	//假设当前位置为PC规划工作坐标系的零点，以(25,0,0)为圆心，运动到(50,0,0)
+	eCutAddCircle(eCut, new eCutPosition{ 50 }, new eCutCartesian{ 25 }, new eCutCartesian{0, 0, 1}, 0, 5, 5, 5);
+
 	while (true)
 	{
 		int steps[4];

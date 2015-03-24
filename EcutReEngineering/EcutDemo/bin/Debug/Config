@@ -2,15 +2,15 @@
   <Axis>
     <Index>1</Index>
     <Name>X</Name>
-    <MaxSpeed>5</MaxSpeed>
-    <Acceleration>0.1</Acceleration>
+    <MaxSpeed>50</MaxSpeed>
+    <Acceleration>10</Acceleration>
     <StepsPerUnit>1600</StepsPerUnit>
     <DirInv>False</DirInv>
   </Axis>
   <Axis>
     <Index>2</Index>
     <Name>Y</Name>
-    <MaxSpeed>10</MaxSpeed>
+    <MaxSpeed>50</MaxSpeed>
     <Acceleration>50</Acceleration>
     <StepsPerUnit>1600</StepsPerUnit>
     <DirInv>False</DirInv>

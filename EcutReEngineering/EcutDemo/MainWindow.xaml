@@ -161,14 +161,6 @@
                                     <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetInputIOEngineDir"/>
                                 </Grid>
                             </TabItem>
-                            <TabItem Header="DeviceNum" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,-61,-1">
-                                    <TextBlock Text="对应的库函数：GetDeviceNum(void)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
-                                    <Label Name="DeviceNum_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="DeviceNum"/>
-                                </Grid>
-                            </TabItem>
                             <TabItem Header="GetDeviceInfo" FontSize="11">
                                 <Grid Background="#FFE5E5E5" Margin="0,-2,-61,-1">
                                     <TextBlock Text="对应的库函数：GetDeviceInfo(int Num,char SerialString[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
@@ -201,114 +193,6 @@
                                 <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
                                     <TextBlock Text="对应的库函数：eCutStopAll(IntPtr eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
                                     <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="StopAll"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="EStop" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutEStop(IntPtr eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="EStop"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="Jog" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutJogOn(IntPtr eCut, unsigned short Axis, double PositionGiven[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="eCutJogOn_Axis" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="Axis:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="eCutJogOn_PositionGiven" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="PositionGiven:"  FontSize="11" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutJogOn"/>
-                                </Grid>
-                            </TabItem>
-                        </TabControl>
-                        <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575">
-                            <TabItem Header = "MoveAbsolute" FontSize = "12">
-                                <Grid Background = "#FFE5E5E5" Margin = "0,-2,-61,-1">
-                                    <TextBlock Text="对应的库函数：eCutMoveAbsolute(eCutDevice eCut,unsigned short AxisMask,double PositionGiven[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="eCutMoveAbsolute_AxisMask" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="AxisMask:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="eCutMoveAbsolute_PositionGiven" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="PositionGiven:"  FontSize="11" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutMoveAbsolute"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="InputIO" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutGetInputIO(eCutDevice eCut,unsigned short pInput[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
-                                    <Label Name="eCutGetInputIO_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutGetInputIO"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="GetSteps" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutGetSteps(eCutDevice eCut,int Steps[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
-                                    <Label Name="eCutGetSteps_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutGetSteps"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="IOOutput" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutSetIOOutput(eCutDevice eCut,unsigned short Out)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="IOOutput_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="Out:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="IOOutput"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="SetSpindle" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutSetSpindle(eCutDevice eCut,unsigned short Out)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="SetSpindle_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="Out:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetSpindle"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="CutStop" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutStop(eCutDevice eCut,unsigned short Axis)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="CutStop_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="Out:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="CutStop"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="GetSmoothCoff" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutGetSmoothCoff(eCutDevice eCut,unsigned int *pSmoothCoff)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
-                                    <Label Name="GetSmoothCoff_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetSmoothCoff"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="SetSoftLimit" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：SetSoftLimit(eCutDevice eCut,double MaxSoftLimit[],double MinSoftLimit[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="SetSoftLimit_MaxSoftLimit" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="MaxSoftLimit:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="SetSoftLimit_MinSoftLimit" Height="20" Margin="110,101,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="MinSoftLimit:"  FontSize="11" HorizontalAlignment="Left" Margin="10,95,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetSoftLimit"/>
-                                </Grid>
-                            </TabItem>
-                        </TabControl>
-                        <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575">
-                            <TabItem Header = "MoveAtSpeed" FontSize = "12">
-                                <Grid Background = "#FFE5E5E5" Margin = "0,-2,-61,-1">
-                                    <TextBlock Text="对应的库函数：eCutMoveAtSpeed(eCutDevice eCut,unsigned short AxisMask,double Acceleration[],double MaxSpeed[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="MoveAtSpeed_AxisMask" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="AxisMask:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="MoveAtSpeed_Acceleration" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="Acceleration:"  FontSize="11" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
-                                    <TextBox HorizontalAlignment="Left" x:Name="MoveAtSpeed_MaxSpeed" Height="20" Margin="110,106,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
-                                    <Label Content="MaxSpeed:"  FontSize="11" HorizontalAlignment="Left" Margin="10,100,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="MoveAtSpeed"/>
-                                </Grid>
-                            </TabItem>
-                            <TabItem Header="GetSpindlePostion" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutGetSpindlePostion(eCutDevice eCut,unsigned short *SpindlePostion)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
-                                    <Label Name="GetSpindlePostion_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetSpindlePostion"/>
                                 </Grid>
                             </TabItem>
                             <TabItem Header="SetCurrentPostion" FontSize="11">
@@ -363,18 +247,66 @@
                                     <Button Content="配置" HorizontalAlignment="Left" Margin="232,182,0,0" VerticalAlignment="Top" Width="75" Click="AddCircle"/>
                                 </Grid>
                             </TabItem>
-                            <TabItem Header="IsDone" FontSize="11">
-                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutIsDone(eCutDevice eCut)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
-                                    <Label Name="IsDone_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
-                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="IsDone"/>
+                        </TabControl>
+                        <TabControl HorizontalAlignment="Left" Height="240" Margin="57,17,0,0" VerticalAlignment="Top" Width="575">
+                            <TabItem Header = "MoveAbsolute" FontSize = "12">
+                                <Grid Background = "#FFE5E5E5" Margin = "0,-2,-61,-1">
+                                    <TextBlock Text="对应的库函数：eCutMoveAbsolute(eCutDevice eCut,unsigned short AxisMask,double PositionGiven[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="eCutMoveAbsolute_AxisMask" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="AxisMask:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="eCutMoveAbsolute_PositionGiven" Height="20" Margin="352,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="PositionGiven:"  FontSize="11" HorizontalAlignment="Left" Margin="242,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutMoveAbsolute"/>
                                 </Grid>
                             </TabItem>
-                            <TabItem Visibility="Collapsed" Header="SetStopType" FontSize="11">
+                            <TabItem Header="GetSteps" FontSize="11">
                                 <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
-                                    <TextBlock Text="对应的库函数：eCutSetStopType(eCutDevice eCut,eCutStopType type,double tolerance)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
-                                    <!--<Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetSmoothCoff"/>-->
+                                    <TextBlock Text="对应的库函数：eCutGetSteps(eCutDevice eCut,int Steps[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="eCutGetSteps_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="eCutGetSteps"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="IOOutput" FontSize="11">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutSetIOOutput(eCutDevice eCut,unsigned short Out)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="IOOutput_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Out:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="IOOutput"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="SetSpindle" FontSize="11">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutSetSpindle(eCutDevice eCut,unsigned short Out)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetSpindle_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Out:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetSpindle"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="CutStop" FontSize="11">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutStop(eCutDevice eCut,unsigned short Axis)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="CutStop_Out" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="Out:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="CutStop"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="GetSmoothCoff" FontSize="11">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：eCutGetSmoothCoff(eCutDevice eCut,unsigned int *pSmoothCoff)" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <Label Content="得到的结果"  FontSize="11" HorizontalAlignment="Left" Margin="142,71,0,0" VerticalAlignment="Top"/>
+                                    <Label Name="GetSmoothCoff_Result" FontSize="11" HorizontalAlignment="Left" Margin="232,71,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="GetSmoothCoff"/>
+                                </Grid>
+                            </TabItem>
+                            <TabItem Header="SetSoftLimit" FontSize="11">
+                                <Grid Background="#FFE5E5E5" Margin="0,-2,0,2">
+                                    <TextBlock Text="对应的库函数：SetSoftLimit(eCutDevice eCut,double MaxSoftLimit[],double MinSoftLimit[])" HorizontalAlignment="Left" Margin="17,10,0,0" VerticalAlignment="Top" FontSize="11" Width="477" Height="30" TextWrapping="Wrap"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetSoftLimit_MaxSoftLimit" Height="20" Margin="110,55,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="MaxSoftLimit:"  FontSize="11" HorizontalAlignment="Left" Margin="10,50,0,0" VerticalAlignment="Top"/>
+                                    <TextBox HorizontalAlignment="Left" x:Name="SetSoftLimit_MinSoftLimit" Height="20" Margin="110,101,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Width="110" FontSize="13" TextAlignment="Center" />
+                                    <Label Content="MinSoftLimit:"  FontSize="11" HorizontalAlignment="Left" Margin="10,95,0,0" VerticalAlignment="Top"/>
+                                    <Button Content="配置" HorizontalAlignment="Left" Margin="212,161,0,0" VerticalAlignment="Top" Width="75" Click="SetSoftLimit"/>
                                 </Grid>
                             </TabItem>
                         </TabControl>

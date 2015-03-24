@@ -186,6 +186,12 @@ extern "C"
 	ECUTDEVICE_API int eCutQueueDepth(eCutDevice eCut);
 	ECUTDEVICE_API eCutError eCutSetStopType(eCutDevice eCut, eCutStopType type, double tolerance);
 	ECUTDEVICE_API eCutError eCutGcodeLineInterpret(eCutDevice eCut, char *Code);
+	ECUTDEVICE_API eCutError eCutSetOutput(
+		eCutDevice eCut,
+		INT16U Sync,
+		INT16S AnalogOut[],
+		INT16U DigitalOut[]
+		);
 }
 
 #endif

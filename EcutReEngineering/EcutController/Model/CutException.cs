@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace EcutController.Model
+namespace EcutController
 {
     [Serializable]
     public class CutNotOpenException : Exception
@@ -27,9 +27,5 @@ namespace EcutController.Model
           System.Runtime.Serialization.SerializationInfo info,
           System.Runtime.Serialization.StreamingContext context)
             : base(info, context) { }
-    }
-
-    class CutException
-    {
     }
 }

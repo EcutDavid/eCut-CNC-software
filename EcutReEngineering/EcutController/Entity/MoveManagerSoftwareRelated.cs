@@ -2,7 +2,7 @@
 
 namespace EcutController
 {
-    class MoveManagerSoftwareRelated
+    internal class MoveManagerSoftwareRelated
     {
         internal static bool SetSoftLimit(IntPtr cutHandler, double[] MaxSoftLimit, double[] MinSoftLimit)
         {

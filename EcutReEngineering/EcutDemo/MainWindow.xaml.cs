@@ -4,6 +4,7 @@ using SharpGL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
@@ -52,7 +53,7 @@ namespace P1S1
 
         private void AxistTick(object sender, EventArgs e)
         {
-            var positon = cutService.MachinePostion;
+            var positon = cutService.CutMachinePostion;
 
             for (int i = 0; i < 4; i++)
             {
@@ -96,22 +97,19 @@ namespace P1S1
             if (ledManager != null)
             {
                 ushort OutPutVal = 0;
-                int? InPutVal = 0;
+                int InPutVal = 0;
                 for (ushort i = LEDCount / 2; i < LEDCount; i++)
                 {
                     OutPutVal += (ledManager[i].EnableFlag) ? ((ushort)(1 << (i - LEDCount / 2))) : (ushort)0;
                 }
                 if (OutPutValStore != OutPutVal)
                 {
-                    cutService.OutputIO = OutPutVal;
+                    cutService.CutGeneralOutputIOMask = OutPutVal;
                     OutPutValStore = OutPutVal;
                 }
-                InPutVal = cutService.InputIO;
-                if (InPutVal != null)
-                {
-                    for (ushort i = 0; i < LEDCount / 2; i++)
-                        ledManager[i].EnableFlag = ((InPutVal & (1 << i)) == 0) ? false : true;
-                }
+                InPutVal = (int)(cutService.CutGeneralInputMask);
+                for (ushort i = 0; i < LEDCount / 2; i++)
+                    ledManager[i].EnableFlag = ((InPutVal & (1 << i)) == 0) ? false : true;
             }
         }
 
@@ -167,7 +165,7 @@ namespace P1S1
 
         private void ConnetEcut(object sender, RoutedEventArgs e)
         {
-            if (cutService.IsOpen())
+            if (cutService.CutIsOpen())
             {
                 ECutConnecter.Content = "连接e-Cut";
                 infoBorad.AddInfo("已断开连接");
@@ -176,11 +174,11 @@ namespace P1S1
                 textDisplayTimer.Tick -= textDisplayTimer_Tick;
                 ControlTab.IsEnabled = false;
                 ConnectLED.Fill = new SolidColorBrush(Color.FromRgb(0x80, 0x80, 0x80));
-                cutService.Close();
+                cutService.CloseCut();
             }
             else
             {
-                if (cutService.GetSumNumberOfEcut() == 0)
+                if (cutService.GetConnectedCutNum() == 0)
                 {
                     infoBorad.AddInfo("没有找到e-Cut");
                     return;
@@ -198,21 +196,21 @@ namespace P1S1
                         if (controllerConfigurationStruct.DirInv[i])
                             dirNeg += (ushort)(1 << i);
                     }
-                    cutService.Open(1);
-                    cutService.StepPin = new byte[9] { 0, 1, 2, 3, 4, 5, 6, 7, 8 };
-                    cutService.DirPin = new byte[9] { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18 };
-                    cutService.StepNeg = 0;
-                    cutService.DirNeg = dirNeg;
+                    cutService.OpenCut(0);
+                    cutService.CutStepPin = new byte[11] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 0x60, 0x62};
+                    cutService.CutDirPin = new byte[11] { 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x61, 0x63};
+                    cutService.CutStepNegMask = 0;
+                    cutService.CutDirNegMask = dirNeg;
 
                     //在不配置硬限位的情况下，清空硬限位配置
-                    cutService.eCutSetInputIOEngineDir(0, 0, new byte[64], new sbyte[64]);
+                    cutService.CutSetInputIOEngineDir(0, 0, new byte[64]);
 
                     //SmoothCoff的配置会影响最大加速度等其它参数，所以它们应该一起配置，并且SmoothCoff优于最大加速度配置
-                    cutService.SmoothCoff = controllerConfigurationStruct.SmoothCoff;
-                    cutService.StepsPerUnit = controllerConfigurationStruct.StepsPerUnit;
-                    cutService.Acceleration = controllerConfigurationStruct.Acceleration;
-                    cutService.MaxSpeed = controllerConfigurationStruct.MaxSpeed;
-                    cutService.DelayBetweenPulseAndDir = controllerConfigurationStruct.DelayBetweenPulseAndDir;
+                    cutService.CutSmoothCoff = controllerConfigurationStruct.SmoothCoff;
+                    cutService.CutStepsPerUnit = controllerConfigurationStruct.StepsPerUnit;
+                    cutService.HWPlanMovementAcceleration = controllerConfigurationStruct.Acceleration;
+                    cutService.HWPlanMovementMaxSpeed = controllerConfigurationStruct.MaxSpeed;
+                    cutService.CutDelayBetweenPulseAndDir = controllerConfigurationStruct.DelayBetweenPulseAndDir;
 
                     ECutConnecter.Content = "断开连接";
                     infoBorad.AddInfo("成功连接");
@@ -248,9 +246,9 @@ namespace P1S1
         void textDisplayTimer_Tick(object sender, EventArgs e)
         {
             //Test Active And Queue Depth
-            infoBorad.AddInfo("ASUActiveDepth " + cutService.eCutActiveDepth());
-            infoBorad.AddInfo("ASUQueueDepth " + cutService.eCutQueueDepth());
-            infoBorad.AddInfo("ASU IsDone " + cutService.eCutIsDone());
+            infoBorad.AddInfo("ASUActiveDepth " + cutService.PCPlanMovementActiveDepth());
+            infoBorad.AddInfo("ASUQueueDepth " + cutService.PCPlanMovementQueueDepth());
+            infoBorad.AddInfo("ASU IsDone " + cutService.PCPlanMovementIsDone());
         }
 
         private void ManualMouseDown(object sender, RoutedEventArgs e)
@@ -264,54 +262,54 @@ namespace P1S1
             const double valueForUpMove = 99999;
             const double valueForDownMove = -99999;
 
-            var postion = new double[9];
+            double postion = 0;
             ushort axis = 0;
             switch (order)
             {
                 case "ManualXDown":
-                    postion[0] += valueForDownMove;
+                    postion += valueForDownMove;
                     break;
                 case "ManualXUp":
-                    postion[0] += valueForUpMove;
+                    postion += valueForUpMove;
                     break;
                 case "ManualYDown":
                     axis = 1;
-                    postion[1] += valueForDownMove;
+                    postion += valueForDownMove;
                     break;
                 case "ManualYUp":
                     axis = 1;
-                    postion[1] += valueForUpMove;
+                    postion += valueForUpMove;
                     break;
                 case "ManualZDown":
                     axis = 2;
-                    postion[2] += valueForDownMove;
+                    postion += valueForDownMove;
                     break;
                 case "ManualZUp":
                     axis = 2;
-                    postion[2] += valueForUpMove;
+                    postion += valueForUpMove;
                     break;
                 case "ManualADown":
                     axis = 3;
-                    postion[3] += valueForDownMove;
+                    postion += valueForDownMove;
                     break;
                 case "ManualAUp":
                     axis = 3;
-                    postion[3] += valueForUpMove;
+                    postion += valueForUpMove;
                     break;
                 default:
                     break;
             }
-            cutService.eCutJogOn(axis, postion);
+            cutService.HWPlanMovementMove(axis, postion);
         }
 
         private void ManualMouseUp(object sender, RoutedEventArgs e)
         {
-            cutService.EStop();
+            cutService.CutEStop();
         }
 
         private void Window_Unloaded(object sender, RoutedEventArgs e)
         {
-            cutService.Close();
+            cutService.CloseCut();
         }
 
         private void ShowAxisSetting(object sender, RoutedEventArgs e)
@@ -333,18 +331,18 @@ namespace P1S1
 
         private void ALLToZero()
         {
-            var position = cutService.MachinePostion;
+            var position = cutService.CutMachinePostion;
 
             for (int i = 0; i < position.Length; i++)
             {
                 position[i] = -position[i];
             }
-            cutService.AddLine(position, cutService.MaxSpeed.Average(), 100);
+            cutService.PCPlanMovementAddLine(position, cutService.HWPlanMovementMaxSpeed.Average(), cutService.HWPlanMovementMaxSpeed.Average(), 100);
         }
 
         private void ConfigCoordinate(object sender, RoutedEventArgs e)
         {
-            cutService.MachinePostion = (new double[9] { double.Parse(XCoordinateInput.Text), double.Parse(YCoordinateInput.Text), 
+            cutService.CutMachinePostion = (new double[9] { double.Parse(XCoordinateInput.Text), double.Parse(YCoordinateInput.Text), 
                 double.Parse(ZCoordinateInput.Text), double.Parse(ACoordinateInput.Text),0, 0, 0, 0, 0});
         }
 
@@ -377,7 +375,7 @@ namespace P1S1
                     infoBorad.AddInfo("请输入正确的文件");
                     return;
                 }
-                var result = cutService.SetSoftLimit(maxLimitArray, minLimitArray);
+                var result = cutService.HWPlanMovementSetSoftLimit(maxLimitArray, minLimitArray);
                 infoBorad.AddInfo("配置限位成功");
             }
         }
@@ -420,23 +418,23 @@ namespace P1S1
         /// <param name="e"></param>
         private void RunGcode(object sender, RoutedEventArgs e)
         {
-            cutService.SetCurrentPostion(cutService.MachinePostion);
+            cutService.PCPlanMovementSetCurrentPostion(cutService.CutMachinePostion);
             foreach (var item in moveInfoList)
             {
                 //TODO 速度未配置
                 if (item.Type == 1)
                 {
-                    cutService.AddLine(new double[4]{item.Position[0],
-                   item.Position[1],item.Position[2],item.Position[3]}, 5, 5);
+                    cutService.PCPlanMovementAddLine(new double[4]{item.Position[0],
+                   item.Position[1],item.Position[2],item.Position[3]},5, 5, 5);
                 }
                 if (item.Type == 2)
                 {
-                    cutService.CutAddCircle(item.CircleInfo.EndPos, item.CircleInfo.CenterPos,
+                    cutService.PCPlanMovementAddCircle(item.CircleInfo.EndPos, item.CircleInfo.CenterPos,
                         item.CircleInfo.NormalPos, -1, 5, 5, 5);
                 }
                 if (item.Type == 3)
                 {
-                    cutService.CutAddCircle(item.CircleInfo.EndPos, item.CircleInfo.CenterPos,
+                    cutService.PCPlanMovementAddCircle(item.CircleInfo.EndPos, item.CircleInfo.CenterPos,
                         item.CircleInfo.NormalPos, 0, 5, 5, 5);
                 }
             }
@@ -557,7 +555,7 @@ namespace P1S1
                 return;
             try
             {
-                if (cutService.eCutAbort())
+                if (cutService.PCPlanMovementAbort())
                     infoBorad.AddInfo("调用成功");
                 else
                     infoBorad.AddInfo("调用失败");
@@ -570,7 +568,7 @@ namespace P1S1
 
         private bool CheckCutIsOpen()
         {
-            if (!cutService.IsOpen())
+            if (!cutService.CutIsOpen())
             {
                 infoBorad.AddInfo("没有OPEN eCut");
                 return false;
@@ -583,7 +581,7 @@ namespace P1S1
                 return;
             try
             {
-                if (cutService.eCutPause())
+                if (cutService.PCPlanMovementPause())
                     infoBorad.AddInfo("调用成功");
                 else
                     infoBorad.AddInfo("调用失败");
@@ -600,7 +598,7 @@ namespace P1S1
                 return;
             try
             {
-                cutService.StopAll();
+                cutService.HWPlanMovementStop();
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
@@ -615,7 +613,7 @@ namespace P1S1
                 return;
             try
             {
-                cutService.EStop();
+                cutService.CutEStop();
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
@@ -629,42 +627,10 @@ namespace P1S1
                 return;
             try
             {
-                if (cutService.eCutResume())
+                if (cutService.PCPlanMovementResume())
                     infoBorad.AddInfo("调用成功");
                 else
                     infoBorad.AddInfo("调用失败");
-            }
-            catch (Exception)
-            {
-                infoBorad.AddInfo("输入了错误的参数");
-            }
-        }
-
-        private void DeviceNum(object sender, RoutedEventArgs e)
-        {
-            if (!CheckCutIsOpen())
-                return;
-            try
-            {
-                int result = cutService.GetSumNumberOfEcut();
-                infoBorad.AddInfo("调用成功");
-                DeviceNum_Result.Content = result;
-            }
-            catch (Exception)
-            {
-                infoBorad.AddInfo("输入了错误的参数");
-            }
-        }
-        private void eCutGetInputIO(object sender, RoutedEventArgs e)
-        {
-            if (!CheckCutIsOpen())
-                return;
-            try
-            {
-                var result = cutService.InputIO;
-                infoBorad.AddInfo("调用成功");
-                if (result != null)
-                    eCutGetInputIO_Result.Content = result;
             }
             catch (Exception)
             {
@@ -678,7 +644,7 @@ namespace P1S1
                 return;
             try
             {
-                var result = cutService.GetSteps();
+                var result = cutService.CutGetSteps();
                 infoBorad.AddInfo("调用成功");
                 if (result != null)
                     eCutGetSteps_Result.Content = string.Format("X:{0} Y:{1} Z:{2}", result[0], result[1], result[2]);
@@ -696,12 +662,7 @@ namespace P1S1
             try
             {
                 var taskNumber = int.Parse(GetDeviceInfo_Number.Text);
-                var charArray = new byte[12];
-                if (cutService.GetDeviceInfo(taskNumber, charArray))
-                    infoBorad.AddInfo("调用成功");
-                else
-                    infoBorad.AddInfo("调用失败");
-                GetDeviceInfo_Result.Content = System.Text.Encoding.GetEncoding("GB2312").GetString(charArray, 0, charArray.Length);
+                GetDeviceInfo_Result.Content = cutService.GetCutInfo(taskNumber);
             }
             catch (Exception)
             {
@@ -720,7 +681,7 @@ namespace P1S1
                 {
                     ushortArray[i] = ushort.Parse(strArray[i]);
                 }
-                cutService.eCutSetOutput(ushortArray);
+                cutService.CutGeneralOutputIOMask = ushortArray[0];
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception exception)
@@ -736,42 +697,10 @@ namespace P1S1
             try
             {
                 var taskNumber = ushort.Parse(CutStop_Out.Text);
-                if (cutService.CutStop(taskNumber))
+                if (cutService.HWPlanMovementStop(taskNumber))
                     infoBorad.AddInfo("调用成功");
                 else
                     infoBorad.AddInfo("调用失败");
-            }
-            catch (Exception)
-            {
-                infoBorad.AddInfo("输入了错误的参数");
-            }
-        }
-
-        private void GetSpindlePostion(object sender, RoutedEventArgs e)
-        {
-            if (!CheckCutIsOpen())
-                return;
-            try
-            {
-                //UInt16 result = cutService.GetSpindlePostion();
-                //GetSpindlePostion_Result.Content = result;
-                infoBorad.AddInfo("调用成功");
-            }
-            catch (Exception)
-            {
-                infoBorad.AddInfo("输入了错误的参数");
-            }
-        }
-
-        private void IsDone(object sender, RoutedEventArgs e)
-        {
-            if (!CheckCutIsOpen())
-                return;
-            try
-            {
-                bool result = cutService.eCutIsDone();
-                IsDone_Result.Content = result;
-                infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
             {
@@ -785,7 +714,7 @@ namespace P1S1
                 return;
             try
             {
-                UInt32 result = cutService.SmoothCoff;
+                UInt32 result = cutService.CutSmoothCoff;
                 GetSmoothCoff_Result.Content = result;
                 infoBorad.AddInfo("调用成功");
             }
@@ -803,7 +732,7 @@ namespace P1S1
             {
                 //TODO:WHY THOW AN EXCEPTION?
                 var taskNumber = ushort.Parse(SetSpindle_Out.Text);
-                cutService.setSpindle(taskNumber);
+                cutService.CutSetSpindle(taskNumber);
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
@@ -812,29 +741,6 @@ namespace P1S1
             }
         }
 
-        private void eCutJogOn(object sender, RoutedEventArgs e)
-        {
-            if (!CheckCutIsOpen())
-                return;
-            try
-            {
-                UInt16 Axis = UInt16.Parse(eCutJogOn_Axis.Text);
-                var doubleArray = new Double[9];
-                var strArray = (eCutJogOn_PositionGiven.Text).Split(',');
-                for (int i = 0; i < strArray.Length; i++)
-                {
-                    doubleArray[i] = Double.Parse(strArray[i]);
-                }
-                if (cutService.eCutJogOn(Axis, doubleArray))
-                    infoBorad.AddInfo("调用成功");
-                else
-                    infoBorad.AddInfo("调用失败");
-            }
-            catch (Exception)
-            {
-                infoBorad.AddInfo("输入了错误的参数");
-            }
-        }
 
         private void eCutMoveAbsolute(object sender, RoutedEventArgs e)
         {
@@ -849,7 +755,7 @@ namespace P1S1
                 {
                     doubleArray[i] = Double.Parse(strArray[i]);
                 }
-                if (cutService.eCutMoveAbsolute(AxisMask, doubleArray))
+                if (cutService.HWPlanMovementMove(AxisMask, doubleArray))
                     infoBorad.AddInfo("调用成功");
                 else
                     infoBorad.AddInfo("调用失败");
@@ -880,7 +786,7 @@ namespace P1S1
                 }
                 var InputIOEnable = UInt64.Parse(SetInputIOEngineDir_InputIOEnable.Text);
                 var InputIONeg = UInt64.Parse(SetInputIOEngineDir_InputIONeg.Text);
-                var result = cutService.eCutSetInputIOEngineDir(InputIOEnable, InputIONeg, inputIOPinArray, EngineDirections);
+                var result = cutService.CutSetInputIOEngineDir(InputIOEnable, InputIONeg, inputIOPinArray);
                 if (result == true)
                     infoBorad.AddInfo("调用成功");
                 else
@@ -910,7 +816,7 @@ namespace P1S1
                 {
                     minSoftLimitArray[i] = double.Parse(strArray[i]);
                 }
-                var result = cutService.SetSoftLimit(maxSoftLimitArray, minSoftLimitArray);
+                var result = cutService.HWPlanMovementSetSoftLimit(maxSoftLimitArray, minSoftLimitArray);
                 if (result == true)
                     infoBorad.AddInfo("调用成功");
                 else
@@ -967,44 +873,44 @@ namespace P1S1
 
         private int HomingWithCertainAxis(int taskHomingPin, int inputIOVal, int axisNum)
         {
-            var pos = cutService.MachinePostion;
+            var pos = cutService.CutMachinePostion;
             bool homingDir = false;
             //TODO : Add connect to dir in setting
             if (homingDir)
                 pos[axisNum] += 999999;
             else
                 pos[axisNum] -= 999999;
-            cutService.eCutMoveAbsolute(15, pos);
+            cutService.HWPlanMovementMove(15, pos);
 
             while ((inputIOVal & (1 << taskHomingPin)) == 0)
             {
-                inputIOVal = (int)cutService.InputIO;
+                inputIOVal = (int)cutService.CutGeneralInputMask;
                 Thread.Sleep(1);
             }
-            cutService.EStop();
+            cutService.CutEStop();
             //获取回零信号刚刚被触发时Cut所处位置,补偿
             //var eCutPosWhenHomingSignalInvoke = cutService.MachinePostion;
             //pos[axisNum] = -(cutService.MachinePostion[axisNum] - eCutPosWhenHomingSignalInvoke[axisNum]);
             //cutService.eCutMoveAbsolute(15, pos);
-            pos = cutService.MachinePostion;
+            pos = cutService.CutMachinePostion;
             if (homingDir)
                 pos[axisNum] -= 999999;
             else
                 pos[axisNum] += 999999;
-            cutService.eCutMoveAbsolute(15, pos);
-            inputIOVal = (int)cutService.InputIO;
+            cutService.HWPlanMovementMove(15, pos);
+            inputIOVal = (int)cutService.CutGeneralInputMask;
             while ((inputIOVal & (1 << taskHomingPin)) != 0)
             {
-                inputIOVal = (int)cutService.InputIO;
+                inputIOVal = (int)cutService.CutGeneralInputMask;
                 Thread.Sleep(1);
             }
-            cutService.EStop();
+            cutService.CutEStop();
             WaitUntilCutStopMoveWithCertainAxis(axisNum);
 
             //回零过后使得相应轴机械坐标归0
-            var eCutPos = cutService.MachinePostion;
+            var eCutPos = cutService.CutMachinePostion;
             eCutPos[axisNum] = 0;
-            cutService.MachinePostion = eCutPos;
+            cutService.CutMachinePostion = eCutPos;
             Thread.Sleep(500);
             return inputIOVal;
         }
@@ -1020,10 +926,10 @@ namespace P1S1
             double tmp = 0;
             do
             {
-                tmp = cutService.MachinePostion[axisNum];
+                tmp = cutService.CutMachinePostion[axisNum];
                 Thread.Sleep(5);
             }
-            while (cutService.MachinePostion[axisNum] != tmp);
+            while (cutService.CutMachinePostion[axisNum] != tmp);
         }
 
         private void SetCurrentPostion(object sender, RoutedEventArgs e)
@@ -1039,7 +945,7 @@ namespace P1S1
                     pos[i] = double.Parse(strArray[i]);
                 }
 
-                var result = cutService.SetCurrentPostion(pos);
+                cutService.PCPlanMovementSetCurrentPostion(pos);
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
@@ -1077,9 +983,8 @@ namespace P1S1
                 {
                     normal[i] = double.Parse(strArray[i]);
                 }
-                var result = cutService.CutAddCircle(pos, center, normal, turn, vel, ini_maxvel, acc);
-                if (((bool)result) == true)
-                    infoBorad.AddInfo("调用成功");
+                cutService.PCPlanMovementAddCircle(pos, center, normal, turn, vel, ini_maxvel, acc);
+                infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
             {
@@ -1100,7 +1005,7 @@ namespace P1S1
                 for (int i = 0; i < strArray.Length; i++)
                     pos[i] = double.Parse(strArray[i]);
 
-                var result = cutService.CutAddLine(pos, vel, ini_maxvel, acc);
+                cutService.PCPlanMovementAddLine(pos, vel, ini_maxvel, acc);
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
@@ -1119,32 +1024,7 @@ namespace P1S1
                 var type = byte.Parse(SetStopType_type.Text);
                 var tolerance = double.Parse(SetStopType_tolerance.Text);
 
-                bool result = cutService.SetStopType((eCutStopType)type, tolerance);
-                infoBorad.AddInfo("调用成功");
-            }
-            catch (Exception)
-            {
-                infoBorad.AddInfo("输入了错误的参数");
-            }
-        }
-        private void MoveAtSpeed(object sender, RoutedEventArgs e)
-        {
-            if (!CheckCutIsOpen())
-                return;
-            try
-            {
-                var axis = ushort.Parse(MoveAtSpeed_AxisMask.Text);
-                var Acceleration = new double[9];
-                var strArray = (MoveAtSpeed_Acceleration.Text).Split(',');
-                for (int i = 0; i < strArray.Length; i++)
-                    Acceleration[i] = double.Parse(strArray[i]);
-
-                var MaxSpeed = new double[9];
-                strArray = (MoveAtSpeed_MaxSpeed.Text).Split(',');
-                for (int i = 0; i < strArray.Length; i++)
-                    MaxSpeed[i] = double.Parse(strArray[i]);
-
-                var result = cutService.MoveAtSpeed(axis, Acceleration, MaxSpeed);
+                bool result = cutService.PCPlanMovementSetStopType((eCutStopType)type, tolerance);
                 infoBorad.AddInfo("调用成功");
             }
             catch (Exception)
@@ -1179,7 +1059,7 @@ namespace P1S1
             { "Next",   "ManualZDown" }};
             var value = dic.SingleOrDefault(item => item.Key == e.Key.ToString()).Value;
             if (value != null)
-                cutService.EStop();
+                cutService.CutEStop();
         }
 
         //PgDn Next PgUp Prior
