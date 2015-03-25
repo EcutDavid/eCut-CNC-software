@@ -39,21 +39,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Entity\CutUtility.cs" />
     <Compile Include="Entity\EcutEntity.cs" />
     <Compile Include="Model\CutException.cs" />
     <Compile Include="Model\IEcutService.cs" />
-    <Compile Include="Model\ControllerConfigurationStruct.cs" />
     <Compile Include="Entity\CutConfiguration.cs" />
     <Compile Include="UnManagedSourceImporter\eCutDevice.cs" />
     <Compile Include="Entity\IOManager.cs" />
-    <Compile Include="Model\MoveInfoStruct.cs" />
     <Compile Include="Entity\MoveManagerHardwareRelated.cs" />
     <Compile Include="Entity\MoveManagerSoftwareRelated.cs" />
-    <Compile Include="Model\OutPutPinSettingStruct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="UnManagedSourceImporter\eCutDevice.h" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

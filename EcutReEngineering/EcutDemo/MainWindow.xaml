@@ -343,7 +343,7 @@
                         </GroupBox>
                         <GroupBox Header="加工" Margin="0,1,0,0" Grid.Row="1">
                             <WrapPanel>
-                                <Button Style="{StaticResource NormalButton}"  Click="LimitSet" Content="限位配置"/>
+                                <Button Style="{StaticResource NormalButton}" Content="XXX"/>
                                 <Button Style="{StaticResource NormalButton}" Click="RunGcode" Content="启动"/>
                             </WrapPanel>
                         </GroupBox>

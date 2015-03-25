@@ -3,8 +3,9 @@ using System.Text;
 
 namespace EcutController
 {
-    public class EcutEntity : IEcutService
+    internal class EcutEntity : IEcutService
     {
+        private int cutIndex;
         private IntPtr eCutHandler;
         private const int NumOfAxis = 4;
         private UInt16 _delayBetweenPulseAndDir;
@@ -12,37 +13,53 @@ namespace EcutController
         private UInt32 _smoothCoff;
         private double[] _acceleration = new double[9];
         private double[] _maxSpeed = new double[9];
-        private byte[] _stepPin = new byte[8];
-        private byte[] _dirPin = new byte[8];
+        private byte[] _stepPin = new byte[9];
+        private byte[] _dirPin = new byte[9];
+        private Boolean[] _axisEnable = new Boolean[9] { true, true, true, true, true, true, true, true, true };
+
+        public Boolean[] AxisEnableConfigArr
+        {
+            get
+            {
+                return _axisEnable;
+            }
+            set
+            {
+                _axisEnable = value;
+                ConfigAxis();
+            }
+        }
+
+        internal EcutEntity(int cutIndex)
+        {
+            this.cutIndex = cutIndex;
+        }
 
         private void CheckCutHasOpen()
         {
-            //THROW EXCEPTIUON HERE
+            if (eCutHandler.ToInt64() == 0)
+                throw new CutNotOpenException();
         }
 
-        private void CheckCutExist()
-        { 
-        
-        }
-
-        public static IEcutService GetCutServiceInstance()
-        { 
-            return new EcutEntity();
-        }
-
-        private EcutEntity(){}
-
-        public bool OpenCut(int num)
+        private void CheckCutExist(int num)
         {
+            if ((CutUtility.GetConnectedCutNum() - 1) < num)
+                throw new CutNotExistException();
+        }
+
+        public bool OpenCut()
+        {
+            CheckCutExist(this.cutIndex);
             if (eCutHandler.ToInt64() == 0)
             {
-                eCutHandler = eCutDevice.eCutOpen(num);
+                eCutHandler = eCutDevice.eCutOpen(this.cutIndex);
                 if (eCutHandler == null)
                     return false;
-                var res = eCutDevice.eCutConfigDeviceDefault(eCutHandler);
+                eCutDevice.eCutConfigDeviceDefault(eCutHandler);
             }
             return true;
         }
+
 
         public void CloseCut()
         {
@@ -59,29 +76,28 @@ namespace EcutController
             return (eCutHandler.ToInt64() != 0);
         }
 
-        public int GetConnectedCutNum()
-        {
-            return eCutDevice.GetDeviceNum();
-        }
+
 
         public int[] CutGetSteps()
         {
+            CheckCutHasOpen();
             int[] steps = new int[6];
-            if ((eCutHandler.ToInt64()) != 0 && (eCutError.eCut_True == eCutDevice.eCutGetSteps(eCutHandler, steps)))
-                return steps;
-            return null;
+            eCutDevice.eCutGetSteps(eCutHandler, steps);
+            return steps;
         }
-        
+
 
         public void HWPlanMovementStop()
         {
+            CheckCutHasOpen();
             var result = eCutDevice.eCutStopAll(eCutHandler);
         }
 
         public void CutEStop()
         {
-            if(eCutHandler.ToInt64() != 0)
-                eCutDevice.eCutEStop(eCutHandler);
+            CheckCutHasOpen();
+
+            var result = eCutDevice.eCutEStop(eCutHandler);
         }
 
 
@@ -93,8 +109,9 @@ namespace EcutController
             }
             set
             {
+                CheckCutHasOpen();
                 _delayBetweenPulseAndDir = value;
-                MoveManagerHardwareRelated.SetStepsPerUnit(eCutHandler, _stepsPerUnit, (int)_smoothCoff, _delayBetweenPulseAndDir);
+                var result = MoveManagerHardwareRelated.SetStepsPerUnit(eCutHandler, _stepsPerUnit, (int)_smoothCoff, _delayBetweenPulseAndDir);
             }
         }
 
@@ -106,24 +123,23 @@ namespace EcutController
             }
             set
             {
-                if (eCutHandler.ToInt64() != 0)
-                {
-                    _smoothCoff = value;
-                    CutConfiguration.SetStepsPerUnitWithSmoothCoffAndPulseDelay(eCutHandler, _stepsPerUnit, (int)_smoothCoff, _delayBetweenPulseAndDir);
-                }
+                CheckCutHasOpen();
+                _smoothCoff = value;
+                var result = CutConfiguration.SetStepsPerUnitWithSmoothCoffAndPulseDelay(eCutHandler, _stepsPerUnit, (int)_smoothCoff, _delayBetweenPulseAndDir);
             }
         }
 
-        public double[] HWPlanMovementAcceleration
+        public double[] HWPlanMovementAccConfigArr
         {
             set
             {
+                CheckCutHasOpen();
                 _acceleration = value;
-                CutConfiguration.EcutSetAccelerationMaxSpeed(eCutHandler, _acceleration, _maxSpeed);
+                var result = CutConfiguration.EcutSetAccelerationMaxSpeed(eCutHandler, _acceleration, _maxSpeed);
             }
         }
 
-        public double[] HWPlanMovementMaxSpeed
+        public double[] HWPlanMovementMaxSpeedConfigArr
         {
             get
             {
@@ -131,12 +147,13 @@ namespace EcutController
             }
             set
             {
+                CheckCutHasOpen();
                 _maxSpeed = value;
-                CutConfiguration.EcutSetAccelerationMaxSpeed(eCutHandler, _acceleration, _maxSpeed);
+                var result = CutConfiguration.EcutSetAccelerationMaxSpeed(eCutHandler, _acceleration, _maxSpeed);
             }
         }
 
-        public int[] CutStepsPerUnit
+        public int[] CutStepsPerUnitConfigArr
         {
             get
             {
@@ -144,12 +161,13 @@ namespace EcutController
             }
             set
             {
+                CheckCutHasOpen();
                 _stepsPerUnit = value;
-                MoveManagerHardwareRelated.SetStepsPerUnit(eCutHandler, _stepsPerUnit, (int)_smoothCoff, _delayBetweenPulseAndDir);
+                var result = MoveManagerHardwareRelated.SetStepsPerUnit(eCutHandler, _stepsPerUnit, (int)_smoothCoff, _delayBetweenPulseAndDir);
             }
         }
 
-        public double[] CutMachinePostion
+        public double[] CutMachinePostionArr
         {
             get
             {
@@ -157,7 +175,7 @@ namespace EcutController
                 if ((eCutHandler.ToInt64()) == 0)
                     return doubleArray;
                 var stepNumer = CutGetSteps();
-                var stepsPerUnit = CutStepsPerUnit;
+                var stepsPerUnit = CutStepsPerUnitConfigArr;
                 var smooth = (double)CutSmoothCoff;
 
                 for (int i = 0; i < 4; i++)
@@ -167,17 +185,18 @@ namespace EcutController
             }
             set
             {
+                CheckCutHasOpen();
                 if (value == null)
                     value = new double[9];
-                eCutDevice.eCutSetCoordinate(eCutHandler, value);
+                var result = eCutDevice.eCutSetCoordinate(eCutHandler, value);
             }
         }
-
 
         public UInt64 CutGeneralInputMask
         {
             get
             {
+                CheckCutHasOpen();
                 return IOManager.GetIO(eCutHandler);
             }
         }
@@ -186,12 +205,13 @@ namespace EcutController
         {
             set
             {
-                IOManager.SetIO(eCutHandler, value);
+                CheckCutHasOpen();
+                var result = IOManager.SetIO(eCutHandler, value);
             }
         }
 
 
-        public byte[] CutStepPin
+        public byte[] CutStepSigPinConfigArr
         {
             get
             {
@@ -199,57 +219,65 @@ namespace EcutController
             }
             set
             {
+                CheckCutHasOpen();
                 _stepPin = value;
-                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
-             }
+                ConfigAxis();
+            }
         }
 
         private ushort stepNeg;
         public ushort CutStepNegMask
         {
-            get 
+            get
             {
-                return stepNeg; 
+                return stepNeg;
             }
-            set 
+            set
             {
+                CheckCutHasOpen();
                 stepNeg = value;
-                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
+                ConfigAxis();
             }
+        }
+
+        /// <summary>
+        /// TODO：增加默认DIGIO 配IO的配置
+        /// </summary>
+        private void ConfigAxis()
+        {
+            var result = eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, _axisEnable, stepNeg, dirNeg);
         }
 
         private ushort dirNeg;
         public ushort CutDirNegMask
         {
-            get
-            {
-                return dirNeg;
-            }
+            get { return dirNeg; }
             set
             {
+                CheckCutHasOpen();
                 dirNeg = value;
-                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, 
-                    new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
+                ConfigAxis();
             }
         }
-        
 
-        public byte[] CutDirPin
+        public byte[] CutDirSigPinConfigArr
         {
             get
             {
                 return _dirPin;
             }
-            set 
+            set
             {
+                CheckCutHasOpen();
                 _dirPin = value;
-                eCutDevice.eCutSetAxisOutputConfig(eCutHandler, _stepPin, _dirPin, new bool[9] { true, true, true, true, true, true, true, true, true }, stepNeg, dirNeg);
+                ConfigAxis();
             }
         }
 
 
-        public bool HWPlanMovementSetSoftLimit(double[] maxSoftLimit, double[] minSoftLimit)
+        public void HWPlanMovementSetSoftLimit(double[] maxSoftLimit, double[] minSoftLimit)
         {
+            CheckCutHasOpen();
             var maxSoftLimitArray = new double[9];
             var minSoftLimitArray = new double[9];
             if (maxSoftLimit != null)
@@ -268,72 +296,84 @@ namespace EcutController
                 }
             }
 
-            return MoveManagerSoftwareRelated.SetSoftLimit(eCutHandler, maxSoftLimitArray, minSoftLimitArray);
+            MoveManagerSoftwareRelated.SetSoftLimit(eCutHandler, maxSoftLimitArray, minSoftLimitArray);
         }
 
         public bool PCPlanMovementIsDone()
         {
+            CheckCutHasOpen();
             var result = eCutDevice.eCutIsDone(eCutHandler);
-            return eCutError.eCut_True == eCutDevice.eCutIsDone(eCutHandler);
+            return (eCutError.eCut_Error_Ok == result || eCutError.eCut_True == result);
         }
 
-        public bool PCPlanMovementPause()
+        public void PCPlanMovementPause()
         {
+            CheckCutHasOpen();
             var result = eCutDevice.eCutPause(eCutHandler);
-            return eCutError.eCut_Error_Ok == eCutDevice.eCutPause(eCutHandler);
+            eCutDevice.eCutPause(eCutHandler);
         }
 
-        public bool PCPlanMovementResume()
+        public void PCPlanMovementResume()
         {
-            return eCutError.eCut_Error_Ok == eCutDevice.eCutResume(eCutHandler);
+            CheckCutHasOpen();
+            eCutDevice.eCutResume(eCutHandler);
         }
 
-        public bool PCPlanMovementAbort()
+        public void PCPlanMovementAbort()
         {
-            return eCutError.eCut_Error_Ok == eCutDevice.eCutAbort(eCutHandler);
+            CheckCutHasOpen();
+            eCutDevice.eCutAbort(eCutHandler);
         }
 
-        public int PCPlanMovementActiveDepth()
+        public int PCPlanMovementActiveDepth
         {
-            return eCutDevice.eCutActiveDepth(eCutHandler);
+            get
+            {
+                CheckCutHasOpen();
+                return eCutDevice.eCutActiveDepth(eCutHandler);
+            }
+
         }
 
-        public int PCPlanMovementQueueDepth()
+        public int PCPlanMovementQueueDepth
         {
-            return eCutDevice.eCutQueueDepth(eCutHandler);
+            get
+            {
+                CheckCutHasOpen();
+                return eCutDevice.eCutQueueDepth(eCutHandler);
+            }
         }
 
-        public bool CutSetInputIOEngineDir(ulong InputIOEnable, ulong InputIONeg, byte[] InputIOPin)
+        public void CutSetInputIOEngineDir(ulong InputIOEnable, ulong InputIONeg, byte[] InputIOPin)
         {
-            return eCutError.eCut_True == eCutDevice.eCutSetInputIOEngineDir(eCutHandler, InputIOEnable, InputIONeg, InputIOPin, new sbyte[9]);
+            CheckCutHasOpen();
+            eCutDevice.eCutSetInputIOEngineDir(eCutHandler, InputIOEnable, InputIONeg, InputIOPin, new sbyte[9]);
         }
 
-        public String GetCutInfo(int taskNumber)
-        {
-            var charArray = new byte[12];
-            eCutDevice.GetDeviceInfo(taskNumber, charArray);
-            return Encoding.GetEncoding("GB2312").GetString(charArray, 0, charArray.Length).ToString(); 
-        }
 
-        public bool HWPlanMovementMove(ushort AxisMask, double[] doubleArray)
+        public void HWPlanMovementMove(ushort AxisMask, double[] doubleArray)
         {
-            return eCutError.eCut_True == eCutDevice.eCutMoveAbsolute(eCutHandler, AxisMask, doubleArray);
+            CheckCutHasOpen();
+            eCutDevice.eCutMoveAbsolute(eCutHandler, AxisMask, doubleArray);
         }
 
         //TODO:测试该函数
         public void CutSetSpindle(ushort taskNumber)
         {
+            CheckCutHasOpen();
             var result = eCutDevice.eCutSetSpindle(eCutHandler, taskNumber);
         }
 
-        public bool HWPlanMovementStop(ushort taskNumber)
+        public void HWPlanMovementStop(ushort taskNumber)
         {
-            return eCutError.eCut_True == eCutDevice.eCutStop(eCutHandler, taskNumber);
+            CheckCutHasOpen();
+            eCutDevice.eCutStop(eCutHandler, taskNumber);
         }
 
 
         public void PCPlanMovementSetCurrentPostion(double[] pos)
         {
+            CheckCutHasOpen();
             var ecutPos = new eCutPosition();
             ecutPos.x = pos[0];
             ecutPos.y = pos[1];
@@ -343,15 +383,17 @@ namespace EcutController
 
         public void PCPlanMovementAddLine(double[] pos, double vel, double ini_maxvel, double acc)
         {
+            CheckCutHasOpen();
             var ecutPos = new eCutPosition();
             ecutPos.x = pos[0];
             ecutPos.y = pos[1];
             ecutPos.z = pos[2];
-           eCutDevice.eCutAddLine(eCutHandler, ref ecutPos, vel, ini_maxvel, acc);
+            eCutDevice.eCutAddLine(eCutHandler, ref ecutPos, vel, ini_maxvel, acc);
         }
 
         public void PCPlanMovementAddCircle(double[] pos, double[] center, double[] normal, int turn, double vel, double ini_maxvel, double acc)
         {
+            CheckCutHasOpen();
             var ecutPos = new eCutPosition();
             ecutPos.x = pos[0];
             ecutPos.y = pos[1];
@@ -367,20 +409,18 @@ namespace EcutController
             var result = eCutDevice.eCutAddCircle(eCutHandler, ref ecutPos, ref ecutcenter, ref ecutnormal, turn, vel, ini_maxvel, acc);
         }
 
-        public bool PCPlanMovementSetStopType(eCutStopType type, double tolerance)
+        public void PCPlanMovementSetStopType(eCutStopType type, double tolerance)
         {
-            return eCutError.eCut_Error_Ok == eCutDevice.eCutSetStopType(eCutHandler, type, tolerance);
+            CheckCutHasOpen();
+            eCutDevice.eCutSetStopType(eCutHandler, type, tolerance);
         }
 
-
-        public bool HWPlanMovementMove(ushort Axis, double pos)
+        public void HWPlanMovementMove(ushort Axis, double pos)
         {
+            CheckCutHasOpen();
             var doubleArray = new double[9];
             doubleArray[Axis] = pos;
-            if (eCutHandler.ToInt64() == 0)
-                return false;
-            return eCutError.eCut_True == eCutDevice.eCutJogOn(eCutHandler, Axis, doubleArray);
+            eCutDevice.eCutJogOn(eCutHandler, Axis, doubleArray);
         }
-        
     }
 }
